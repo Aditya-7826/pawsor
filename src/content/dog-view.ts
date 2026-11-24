@@ -1,5 +1,6 @@
 import { BLINK_MS, DOG_HEIGHT, DOG_WIDTH, HEART_LIFE_MS, MAX_HEARTS, TWITCH_MS } from './config';
 import { createDogSvg } from './dog-svg';
+import type { Coat } from '../shared/settings';
 import type { Facing, Point } from './motion';
 import type { StateName } from './state-machine';
 
@@ -23,6 +24,7 @@ export interface DogView {
   twitch(): void;
   /** Float a small heart up from the dog at `p`. Capped; returns false when at the cap. */
   spawnHeart(p: Point): boolean;
+  setCoat(coat: Coat): void;
 }
 
 const HEART_SVG =
@@ -117,6 +119,9 @@ export function createDogView(overlay: HTMLElement): DogView {
         hearts--;
       }, HEART_LIFE_MS);
       return true;
+    },
+    setCoat(coat) {
+      if (dog.dataset['coat'] !== coat) dog.dataset['coat'] = coat;
     },
     blink() {
       pulseClass(dog, 'is-blinking', BLINK_MS);

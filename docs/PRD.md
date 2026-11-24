@@ -197,14 +197,19 @@ cheeks, big shiny eyes.
 - `npm run build` succeeds.
 - Docs updated to reflect the change.
 
-## 9. Open Questions
+## 9. Resolved decisions
 
-- **Background service worker.** `chrome.commands.onCommand` only fires in extension pages
-  or a service worker, not in content scripts or a closed popup. The shortcut therefore
-  needs a tiny `dist/background.js` that flips the `visible` setting. This file is not in
-  the original output list. Proposed: add it (no extra permission needed).
-- **Icons.** Proposed: keep an `icons/icon.svg` source of the dog's face and commit PNGs
-  rendered from it once, rather than adding a rasterizer dependency to the build.
+- **Background service worker** (confirmed): `chrome.commands.onCommand` only reaches
+  extension contexts, so a tiny `dist/background.js` flips `visible` for Alt+Shift+P.
+  See ARCHITECTURE KTD-5.
+- **Icons** (confirmed): `icons/icon.svg` is the source; PNGs at 16/32/48/128 are rendered
+  from it once and committed in `public/icons/`.
+- **`@types/chrome`** (confirmed) is a dev dependency for typing `chrome.*`.
+- **Hostname for "Disable on this site"** (confirmed): the popup asks the active tab's
+  content script, so no `tabs` permission is needed.
+
+## 10. Open Questions
+
 - Should "Disable on this site" also cover subdomains (`news.example.com` when
   `example.com` is disabled)? Assumption: exact hostname only.
 - Firefox support (MV3 with `browser.*`) later?

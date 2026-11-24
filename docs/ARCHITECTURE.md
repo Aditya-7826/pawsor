@@ -9,7 +9,8 @@ and a tiny service worker (keyboard shortcut). They talk only through
 ```
 src/
   content/
-    main.ts            entry: guard, wait for body, load settings, mount, start
+    main.ts            entry: guard, then startApp()
+    app.ts             load settings, mount host, wire controller, live updates, teardown
     host.ts            <pawsor-host> + closed Shadow Root + stylesheet adoption
     config.ts          all tuning constants
     state-machine.ts   pure transition(state, event) → state, pure sense()
@@ -29,6 +30,7 @@ src/
     background.ts      chrome.commands → toggle `visible` in storage
   shared/
     settings.ts        Settings type, defaults, pure parse, storage adapter
+    messages.ts        popup → content hostname request/response
 public/
   manifest.json, icons/icon-{16,32,48,128}.png
 icons/icon.svg         source for the PNG icons
@@ -232,11 +234,13 @@ means Pawsor is not running there.
 - **Context**: All open tabs must update live.
 - **Alternatives**: `tabs.sendMessage` to every tab (needs the `tabs` permission).
 - **Reason**: Works with only the `storage` permission and survives restarts.
+- **Note**: Updates are read-modify-write, so `SettingsStore.update` runs them one at a
+  time; quick successive clicks never overwrite each other.
 
-### KTD-5: Service worker for the shortcut (pending confirmation)
+### KTD-5: Service worker for the shortcut
 
 - **Decision**: A minimal `background.js` listens to `chrome.commands.onCommand` and
   flips `visible`.
 - **Context**: Commands are only delivered to extension contexts, not content scripts.
 - **Alternatives**: Use `_execute_action` (opens the popup instead of toggling).
-- **Reason**: The only way to make Alt+Shift+P a true toggle. See PRD Open Questions.
+- **Reason**: The only way to make Alt+Shift+P a true toggle. Confirmed by the owner.

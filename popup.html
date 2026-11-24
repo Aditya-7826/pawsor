@@ -6,7 +6,72 @@
     <title>Pawsor</title>
   </head>
   <body>
-    <main id="popup"><h1>Pawsor</h1></main>
+    <main class="popup" id="popup" aria-busy="true">
+      <header class="popup__header">
+        <span class="popup__mark" id="mark" aria-hidden="true"></span>
+        <h1>Pawsor</h1>
+      </header>
+
+      <div class="row">
+        <span class="row__label" id="show-label">Show Pawsor</span>
+        <button
+          class="switch"
+          id="show"
+          type="button"
+          role="switch"
+          aria-checked="false"
+          aria-labelledby="show-label"
+          disabled
+        >
+          <span class="switch__knob"></span>
+        </button>
+      </div>
+
+      <div class="row row--stack" id="coat-row">
+        <span class="row__label" id="coat-label">Coat</span>
+        <div class="coats" id="coats" role="radiogroup" aria-labelledby="coat-label"></div>
+      </div>
+
+      <div class="row" id="sound-row">
+        <span class="row__label" id="sound-label">Bark sound</span>
+        <button
+          class="switch"
+          id="sound"
+          type="button"
+          role="switch"
+          aria-checked="false"
+          aria-labelledby="sound-label"
+          disabled
+        >
+          <span class="switch__knob"></span>
+        </button>
+      </div>
+
+      <div class="row">
+        <span class="row__label">
+          <span id="site-label">Disable on this site</span>
+          <span class="row__hint" id="site-host"></span>
+        </span>
+        <button
+          class="switch"
+          id="site"
+          type="button"
+          role="switch"
+          aria-checked="false"
+          aria-labelledby="site-label"
+          aria-describedby="site-host"
+          disabled
+        >
+          <span class="switch__knob"></span>
+        </button>
+      </div>
+
+      <p class="note" id="note" role="status"></p>
+
+      <footer class="popup__footer">
+        Shortcut: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+      </footer>
+    </main>
     <script type="module" src="/src/popup/popup.ts"></script>
   </body>
 </html>
