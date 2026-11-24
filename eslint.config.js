@@ -30,7 +30,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['*.js'],
+    files: ['**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
   },

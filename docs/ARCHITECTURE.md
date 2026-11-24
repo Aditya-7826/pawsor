@@ -39,7 +39,7 @@ Vite runs two builds from `vite.config.ts`:
 
 1. **Content**: library mode, `formats: ['iife']`, entry `src/content/main.ts` →
    `dist/content.js`. CSS is imported with `?inline` so it ships inside the JS.
-   `inlineDynamicImports` keeps it one file. A post-build check fails if the bundle
+   Library IIFE mode emits exactly one file. A post-build check fails if the bundle
    contains an `import` statement.
 2. **Extension pages**: `popup.html` and `background.ts` → `dist/popup.html`,
    `dist/popup.js`, `dist/background.js` (fixed names, no hashes).

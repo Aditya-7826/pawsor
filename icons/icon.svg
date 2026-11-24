@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Pawsor face: source for public/icons/icon-*.png -->
+  <path d="M22 58 Q16 14 36 6 Q56 18 58 46 Z" fill="#c97c3c" />
+  <path d="M36 6 Q24 6 18 22 Q30 20 36 6 Z" fill="#a8622c" />
+  <path d="M106 58 Q112 14 92 6 Q72 18 70 46 Z" fill="#c97c3c" />
+  <path d="M92 6 Q104 6 110 22 Q98 20 92 6 Z" fill="#a8622c" />
+  <path d="M34 40 Q34 22 44 18 Q52 26 52 40 Z" fill="#ff9eae" opacity="0.6" />
+  <path d="M94 40 Q94 22 84 18 Q76 26 76 40 Z" fill="#ff9eae" opacity="0.6" />
+  <ellipse cx="64" cy="74" rx="50" ry="46" fill="#e9a25f" />
+  <path d="M50 30 Q64 24 78 30 Q70 46 64 62 Q58 46 50 30 Z" fill="#fff1dc" />
+  <ellipse cx="64" cy="92" rx="30" ry="22" fill="#fff1dc" />
+  <ellipse cx="30" cy="88" rx="9" ry="6" fill="#ff9eae" />
+  <ellipse cx="98" cy="88" rx="9" ry="6" fill="#ff9eae" />
+  <ellipse cx="42" cy="70" rx="10" ry="11.5" fill="#2b1d16" />
+  <ellipse cx="86" cy="70" rx="10" ry="11.5" fill="#2b1d16" />
+  <circle cx="38.5" cy="65.5" r="4" fill="#fff" />
+  <circle cx="82.5" cy="65.5" r="4" fill="#fff" />
+  <circle cx="45.5" cy="75" r="1.8" fill="#fff" />
+  <circle cx="89.5" cy="75" r="1.8" fill="#fff" />
+  <ellipse cx="64" cy="84" rx="8" ry="6" fill="#3b2a20" />
+  <ellipse cx="61.5" cy="82" rx="2.6" ry="1.4" fill="#fff" opacity="0.8" />
+  <path d="M54 95 Q59 101 64 96 Q69 101 74 95" fill="none" stroke="#3b2a20" stroke-width="3"
+    stroke-linecap="round" stroke-linejoin="round" />
+</svg>
