@@ -35,21 +35,21 @@ micro-interactions, never utility.
 
 ## 5. Fixed decisions
 
-| Area         | Decision                                                                         |
-| ------------ | -------------------------------------------------------------------------------- |
-| Platform     | Manifest V3; Chrome, Edge, Brave                                                 |
-| Build        | Vite + vanilla TypeScript. Outputs `dist/content.js` (one IIFE, no runtime imports), `dist/popup.html` + `popup.js`, `dist/manifest.json`, icons |
-| Injection    | `content_scripts` on `<all_urls>`, `run_at: document_idle`, `all_frames: false`  |
-| Permissions  | `["storage"]` only. No `host_permissions`, `tabs`, `scripting` or remote code     |
-| Isolation    | One host element at the end of `<body>` with a **closed** Shadow Root           |
-| Dog          | Inline SVG ~64px wide, separate `<g>` per body part, CSS keyframes               |
-| Movement     | `requestAnimationFrame` loop with lerp easing                                    |
-| Behaviour    | Hand-written finite state machine; transitions in one pure function              |
-| Sound        | Web Audio "boop", off by default                                                 |
-| Settings     | `chrome.storage.sync`; live updates via `chrome.storage.onChanged`               |
-| Shortcut     | `chrome.commands` `toggle-pawsor` = Alt+Shift+P                                  |
-| Quality      | ESLint, Prettier, `tsc --noEmit`, Vitest                                         |
-| Coats        | Honey (orange-tan, default), Cocoa (brown), Snow (white-grey)                    |
+| Area        | Decision                                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Platform    | Manifest V3; Chrome, Edge, Brave                                                                                                                 |
+| Build       | Vite + vanilla TypeScript. Outputs `dist/content.js` (one IIFE, no runtime imports), `dist/popup.html` + `popup.js`, `dist/manifest.json`, icons |
+| Injection   | `content_scripts` on `<all_urls>`, `run_at: document_idle`, `all_frames: false`                                                                  |
+| Permissions | `["storage"]` only. No `host_permissions`, `tabs`, `scripting` or remote code                                                                    |
+| Isolation   | One host element at the end of `<body>` with a **closed** Shadow Root                                                                            |
+| Dog         | Inline SVG ~64px wide, separate `<g>` per body part, CSS keyframes                                                                               |
+| Movement    | `requestAnimationFrame` loop with lerp easing                                                                                                    |
+| Behaviour   | Hand-written finite state machine; transitions in one pure function                                                                              |
+| Sound       | Web Audio "boop", off by default                                                                                                                 |
+| Settings    | `chrome.storage.sync`; live updates via `chrome.storage.onChanged`                                                                               |
+| Shortcut    | `chrome.commands` `toggle-pawsor` = Alt+Shift+P                                                                                                  |
+| Quality     | ESLint, Prettier, `tsc --noEmit`, Vitest                                                                                                         |
+| Coats       | Honey (orange-tan, default), Cocoa (brown), Snow (white-grey)                                                                                    |
 
 ## 6. Features and acceptance criteria
 

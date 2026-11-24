@@ -73,18 +73,18 @@ document_idle
 
 States: `idle`, `follow`, `sit`, `sleep`, `startled`, `perch`, `petted`.
 
-| Event          | Meaning                                                |
-| -------------- | ------------------------------------------------------ |
-| `FAR`          | Cursor beyond the follow threshold                     |
-| `ARRIVED`      | Dog reached its stop point                             |
-| `STILL`        | Cursor still for `SIT_AFTER_MS`                        |
-| `INACTIVE`     | No input for `SLEEP_AFTER_MS`                          |
-| `WAKE`         | Any input while asleep                                 |
-| `RAPID_CLICKS` | ≥ 3 clicks within 600ms                                |
-| `SELECT`       | Non-empty selection appeared (carries its rect)        |
-| `DESELECT`     | Selection cleared                                      |
-| `WIGGLE`       | Petting wiggle over the dog                            |
-| `TIMEOUT`      | Timed state (`startled`, `petted`) is over             |
+| Event          | Meaning                                         |
+| -------------- | ----------------------------------------------- |
+| `FAR`          | Cursor beyond the follow threshold              |
+| `ARRIVED`      | Dog reached its stop point                      |
+| `STILL`        | Cursor still for `SIT_AFTER_MS`                 |
+| `INACTIVE`     | No input for `SLEEP_AFTER_MS`                   |
+| `WAKE`         | Any input while asleep                          |
+| `RAPID_CLICKS` | ≥ 3 clicks within 600ms                         |
+| `SELECT`       | Non-empty selection appeared (carries its rect) |
+| `DESELECT`     | Selection cleared                               |
+| `WIGGLE`       | Petting wiggle over the dog                     |
+| `TIMEOUT`      | Timed state (`startled`, `petted`) is over      |
 
 ```mermaid
 stateDiagram-v2
@@ -176,20 +176,20 @@ means Pawsor is not running there.
 
 ## 7. Failure scenarios
 
-| Scenario                                          | Behaviour                                                     |
-| ------------------------------------------------- | ------------------------------------------------------------- |
+| Scenario                                                           | Behaviour                                                                                 |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | `chrome://`, `edge://`, `brave://`, Web Store, built-in PDF viewer | Browser blocks content scripts. Expected; the popup shows "Pawsor can't visit this page". |
-| No `<body>` (XML, raw SVG)                        | Content script exits silently.                                |
-| Script evaluated twice                            | Guard flag; second run exits.                                 |
-| Page removes the host                             | Loop checks `host.isConnected` and re-appends it.             |
-| Strict page CSP                                   | Constructable stylesheet; `<style>` fallback.                 |
-| Extension reloaded / updated                      | Old script sees an invalid context, stops the loop, removes the host. |
-| `chrome.storage` read fails or data corrupt       | Defaults used; popup shows a small note.                      |
-| Sync quota exceeded                               | `disabledSites` capped at 200; write errors are caught.       |
-| Shortcut taken by another extension               | Unassigned by the browser; user can set it in the shortcuts page. |
-| Top-layer elements (`<dialog>`, popovers)         | They render above the dog. Acceptable.                        |
-| Fullscreen                                        | Dog hidden while `document.fullscreenElement` exists.         |
-| Web Audio unavailable or blocked                  | Silent; behaviour unchanged.                                  |
+| No `<body>` (XML, raw SVG)                                         | Content script exits silently.                                                            |
+| Script evaluated twice                                             | Guard flag; second run exits.                                                             |
+| Page removes the host                                              | Loop checks `host.isConnected` and re-appends it.                                         |
+| Strict page CSP                                                    | Constructable stylesheet; `<style>` fallback.                                             |
+| Extension reloaded / updated                                       | Old script sees an invalid context, stops the loop, removes the host.                     |
+| `chrome.storage` read fails or data corrupt                        | Defaults used; popup shows a small note.                                                  |
+| Sync quota exceeded                                                | `disabledSites` capped at 200; write errors are caught.                                   |
+| Shortcut taken by another extension                                | Unassigned by the browser; user can set it in the shortcuts page.                         |
+| Top-layer elements (`<dialog>`, popovers)                          | They render above the dog. Acceptable.                                                    |
+| Fullscreen                                                         | Dog hidden while `document.fullscreenElement` exists.                                     |
+| Web Audio unavailable or blocked                                   | Silent; behaviour unchanged.                                                              |
 
 ## 8. Key Technical Decisions
 
