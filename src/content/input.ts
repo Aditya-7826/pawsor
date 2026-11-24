@@ -38,5 +38,13 @@ export function createInput(
     opts,
   );
 
+  // Any other activity keeps the dog awake. Listen only; never intercept.
+  const touch = (): void => {
+    state.lastInputAt = now();
+  };
+  for (const type of ['pointerdown', 'keydown', 'wheel', 'scroll', 'touchstart'] as const) {
+    win.addEventListener(type, touch, opts);
+  }
+
   return { state, dispose: () => controller.abort() };
 }

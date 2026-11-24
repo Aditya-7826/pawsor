@@ -35,7 +35,7 @@ import {
   type Point,
   type Size,
 } from './motion';
-import { initialState, run, sense, type MachineState } from './state-machine';
+import { initialState, isWaking, run, sense, type MachineState } from './state-machine';
 
 const DOG_SIZE: Size = { width: DOG_WIDTH, height: DOG_HEIGHT };
 
@@ -73,6 +73,7 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
         distanceToCursor: cursor ? distance(pos, cursor) : null,
         distanceToTarget: toTarget,
         lastMoveAt: input.state.lastMoveAt,
+        lastInputAt: input.state.lastInputAt,
       }),
     );
 
@@ -87,8 +88,9 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
 
     // 4. Idle life.
     const idleLike = machine.name === 'idle' || machine.name === 'sit';
+    const asleep = machine.name === 'sleep';
     if (now >= nextBlinkAt) {
-      view.blink();
+      if (!asleep) view.blink();
       nextBlinkAt = now + between(BLINK_MIN_MS, BLINK_MAX_MS);
     }
     if (now >= nextTwitchAt) {
@@ -112,6 +114,7 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
 
     // 5. Writes.
     view.setState(machine.name);
+    view.setWaking(isWaking(machine, now));
     view.setFacing(facing);
     view.setPosition(pos);
   };

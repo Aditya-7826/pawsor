@@ -52,3 +52,20 @@ describe('dog view facing and trot', () => {
     expect(view.dog.style.getPropertyValue('--trot-speed')).toBe('0.40s');
   });
 });
+
+describe('dog view sleep', () => {
+  it('has a z z z bubble outside the mirrored wrapper', () => {
+    const view = createDogView(document.createElement('div'));
+    const zzz = view.dog.querySelector('.pawsor-zzz');
+    expect(zzz?.textContent).toBe('zzz');
+    expect(zzz?.closest('.pawsor-flip')).toBeNull();
+  });
+
+  it('toggles the waking flag', () => {
+    const view = createDogView(document.createElement('div'));
+    view.setWaking(true);
+    expect('waking' in view.dog.dataset).toBe(true);
+    view.setWaking(false);
+    expect('waking' in view.dog.dataset).toBe(false);
+  });
+});

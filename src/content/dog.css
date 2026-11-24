@@ -189,3 +189,118 @@
     transform: translateY(-2px);
   }
 }
+
+/* Sleep: lie down, eyes closed, slow breathing, floating z z z. */
+.pawsor-dog[data-state='sleep'] [data-part='rig'] {
+  transform: translateY(7px);
+}
+.pawsor-dog[data-state='sleep'] .pawsor-leg {
+  transform: scaleY(0.25);
+}
+.pawsor-dog[data-state='sleep'] [data-part='head'] {
+  transform: translateY(4px) rotate(10deg);
+}
+.pawsor-dog[data-state='sleep'] [data-part='body'] {
+  animation: pawsor-breathe 4.2s ease-in-out infinite;
+}
+.pawsor-dog[data-state='sleep'] [data-part='ear-left'],
+.pawsor-dog[data-state='sleep'] [data-part='ear-right'] {
+  transform: rotate(-14deg);
+}
+.pawsor-dog[data-state='sleep'] .pawsor-eyes-open {
+  display: none;
+}
+.pawsor-dog[data-state='sleep'] .pawsor-eyes-closed {
+  display: inline;
+}
+
+.pawsor-bubble {
+  position: absolute;
+  pointer-events: none;
+  font: 700 13px/1 var(--font, sans-serif);
+  color: var(--ink, #3b2a20);
+  display: none;
+}
+
+.pawsor-zzz {
+  top: -10px;
+  left: 44px;
+  width: 30px;
+  height: 30px;
+}
+.pawsor-zzz span {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  opacity: 0;
+  animation: pawsor-z 2.4s ease-out infinite;
+}
+.pawsor-zzz span:nth-child(2) {
+  font-size: 11px;
+  animation-delay: 0.8s;
+}
+.pawsor-zzz span:nth-child(3) {
+  font-size: 9px;
+  animation-delay: 1.6s;
+}
+.pawsor-dog[data-state='sleep'] .pawsor-zzz {
+  display: block;
+}
+/* Sleeping while facing left: put the z's above the head on the left side. */
+.pawsor-dog[data-facing='left'] .pawsor-zzz {
+  left: -10px;
+}
+
+@keyframes pawsor-z {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -22px) scale(1.1);
+  }
+}
+
+/* Wake-up stretch: a play bow (front down, rump up) and back. */
+.pawsor-dog[data-waking] [data-part='rig'] {
+  animation: pawsor-stretch 0.9s var(--ease-soft, ease-out);
+  transform-origin: 70% 100%;
+}
+.pawsor-dog[data-waking] [data-part='leg-front-near'],
+.pawsor-dog[data-waking] [data-part='leg-front-far'] {
+  animation: pawsor-reach 0.9s var(--ease-soft, ease-out);
+}
+.pawsor-dog[data-waking] .pawsor-eyes-open {
+  display: none;
+}
+.pawsor-dog[data-waking] .pawsor-eyes-happy {
+  display: inline;
+}
+
+@keyframes pawsor-stretch {
+  0% {
+    transform: translateY(7px);
+  }
+  35%,
+  60% {
+    transform: rotate(12deg) translateY(2px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes pawsor-reach {
+  0%,
+  100% {
+    transform: none;
+  }
+  35%,
+  60% {
+    transform: rotate(-35deg) scaleY(1.1);
+  }
+}

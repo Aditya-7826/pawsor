@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ARRIVE_EPSILON, FOLLOW_THRESHOLD, SIT_AFTER_MS } from './config';
+import {
+  ARRIVE_EPSILON,
+  FOLLOW_THRESHOLD,
+  SIT_AFTER_MS,
+  SLEEP_AFTER_MS,
+  STRETCH_MS,
+} from './config';
 import {
   initialState,
+  isWaking,
   run,
   sense,
   transition,
@@ -54,7 +61,13 @@ describe('transition: idle, follow, sit', () => {
 });
 
 describe('sense', () => {
-  const base: Senses = { now: 1000, distanceToCursor: 0, distanceToTarget: 0, lastMoveAt: 1000 };
+  const base: Senses = {
+    now: 1000,
+    distanceToCursor: 0,
+    distanceToTarget: 0,
+    lastMoveAt: 1000,
+    lastInputAt: 1000,
+  };
 
   it('reports nothing when the cursor is near and moving', () => {
     expect(sense(at('idle'), { ...base, distanceToCursor: 50 })).toEqual([]);
@@ -90,5 +103,65 @@ describe('sense', () => {
     const still = { ...base, now: 1000 + SIT_AFTER_MS, distanceToCursor: 40 };
     expect(sense(at('idle'), still)).toEqual([{ type: 'STILL', at: 1000 + SIT_AFTER_MS }]);
     expect(sense(at('idle'), { ...still, now: 999 + SIT_AFTER_MS })).toEqual([]);
+  });
+});
+
+describe('transition: sleep', () => {
+  it('idle and sit fall asleep when inactive', () => {
+    expect(transition(at('idle'), { type: 'INACTIVE', at: 5 })).toEqual(at('sleep', 5));
+    expect(transition(at('sit'), { type: 'INACTIVE', at: 5 })).toEqual(at('sleep', 5));
+  });
+
+  it('a following dog does not fall asleep mid-run', () => {
+    const follow = at('follow');
+    expect(transition(follow, { type: 'INACTIVE', at: 5 })).toBe(follow);
+  });
+
+  it('wakes into idle with a stretch', () => {
+    const s = transition(at('sleep'), { type: 'WAKE', at: 100 });
+    expect(s).toEqual({ name: 'idle', since: 100, wakingUntil: 100 + STRETCH_MS });
+    expect(isWaking(s, 100 + STRETCH_MS - 1)).toBe(true);
+    expect(isWaking(s, 100 + STRETCH_MS)).toBe(false);
+  });
+
+  it('ignores movement and arrival while asleep', () => {
+    const sleep = at('sleep');
+    expect(transition(sleep, { type: 'FAR', at: 1 })).toBe(sleep);
+    expect(transition(sleep, { type: 'STILL', at: 1 })).toBe(sleep);
+    expect(transition(sleep, { type: 'INACTIVE', at: 1 })).toBe(sleep);
+  });
+});
+
+describe('sense: sleep and wake', () => {
+  const quiet: Senses = {
+    now: 20_000,
+    distanceToCursor: 40,
+    distanceToTarget: 0,
+    lastMoveAt: 20_000 - SLEEP_AFTER_MS,
+    lastInputAt: 20_000 - SLEEP_AFTER_MS,
+  };
+
+  it('reports INACTIVE after the sleep delay; idle goes sit then sleep in one frame', () => {
+    const events = sense(at('idle'), quiet);
+    expect(events.map((e) => e.type)).toEqual(['STILL', 'INACTIVE']);
+    expect(run(at('idle'), events).name).toBe('sleep');
+  });
+
+  it('reports WAKE only for input after falling asleep', () => {
+    const asleep = at('sleep', 15_000);
+    expect(sense(asleep, { ...quiet, lastInputAt: 14_000 }).map((e) => e.type)).not.toContain(
+      'WAKE',
+    );
+    expect(sense(asleep, { ...quiet, lastInputAt: 16_000 }).map((e) => e.type)).toContain('WAKE');
+  });
+
+  it('wakes into a stretch even if the cursor is far, then follows', () => {
+    const asleep = at('sleep', 15_000);
+    const far = { ...quiet, distanceToCursor: 500, distanceToTarget: 460, lastInputAt: 19_999 };
+    const awake = run(asleep, sense(asleep, far));
+    expect(awake.name).toBe('idle');
+    expect(sense(awake, { ...far, now: 20_000 + STRETCH_MS - 1 })).toEqual([]);
+    const later = { ...far, now: 20_000 + STRETCH_MS, lastMoveAt: 20_000 + STRETCH_MS };
+    expect(run(awake, sense(awake, later)).name).toBe('follow');
   });
 });

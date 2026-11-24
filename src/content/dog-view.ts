@@ -13,6 +13,8 @@ export interface DogView {
   setPosition(p: Point): void;
   setState(name: StateName): void;
   setFacing(facing: Facing): void;
+  /** True during the wake-up stretch. */
+  setWaking(waking: boolean): void;
   /** Leg-cycle duration in seconds. */
   setTrotSpeed(seconds: number): void;
   /** Eye offset in px and head tilt in degrees, in the dog's own (right-facing) frame. */
@@ -42,7 +44,15 @@ export function createDogView(overlay: HTMLElement): DogView {
   const flip = doc.createElement('div');
   flip.className = 'pawsor-flip';
   flip.append(createDogSvg(doc));
-  dog.append(flip);
+  // Bubbles sit outside the flip wrapper so their text never mirrors.
+  const zzz = doc.createElement('div');
+  zzz.className = 'pawsor-bubble pawsor-zzz';
+  for (const ch of ['z', 'z', 'z']) {
+    const span = doc.createElement('span');
+    span.textContent = ch;
+    zzz.append(span);
+  }
+  dog.append(flip, zzz);
   overlay.append(dog);
 
   let lastLook = '';
@@ -57,6 +67,11 @@ export function createDogView(overlay: HTMLElement): DogView {
     },
     setState(name) {
       if (dog.dataset['state'] !== name) dog.dataset['state'] = name;
+    },
+    setWaking(waking) {
+      if (waking === 'waking' in dog.dataset) return;
+      if (waking) dog.dataset['waking'] = '';
+      else delete dog.dataset['waking'];
     },
     setFacing(facing) {
       if (dog.dataset['facing'] !== facing) dog.dataset['facing'] = facing;

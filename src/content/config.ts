@@ -49,3 +49,8 @@ export const FACE_CURSOR_MIN_DX = 24;
 /** Leg cycle duration at the slowest and fastest trot (seconds). */
 export const TROT_SLOW_S = 0.5;
 export const TROT_FAST_S = 0.22;
+
+/** No input for this long → the dog falls asleep. */
+export const SLEEP_AFTER_MS = 12000;
+/** Length of the wake-up stretch; the dog stays put meanwhile. */
+export const STRETCH_MS = 900;

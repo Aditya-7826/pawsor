@@ -1,19 +1,29 @@
-import { ARRIVE_EPSILON, FOLLOW_THRESHOLD, SIT_AFTER_MS } from './config';
+import {
+  ARRIVE_EPSILON,
+  FOLLOW_THRESHOLD,
+  SIT_AFTER_MS,
+  SLEEP_AFTER_MS,
+  STRETCH_MS,
+} from './config';
 
 /** Pure behaviour logic. No DOM, no clocks: time arrives on events. */
 
-export type StateName = 'idle' | 'follow' | 'sit';
+export type StateName = 'idle' | 'follow' | 'sit' | 'sleep';
 
 export interface MachineState {
   readonly name: StateName;
   /** Time the state was entered. */
   readonly since: number;
+  /** Set when waking from sleep: the dog stretches until this time before moving. */
+  readonly wakingUntil?: number;
 }
 
 export type MachineEvent =
   | { readonly type: 'FAR'; readonly at: number }
   | { readonly type: 'ARRIVED'; readonly at: number }
-  | { readonly type: 'STILL'; readonly at: number };
+  | { readonly type: 'STILL'; readonly at: number }
+  | { readonly type: 'INACTIVE'; readonly at: number }
+  | { readonly type: 'WAKE'; readonly at: number };
 
 export const initialState = (at = 0): MachineState => ({ name: 'idle', since: at });
 
@@ -28,12 +38,19 @@ export function transition(state: MachineState, event: MachineEvent): MachineSta
     case 'idle':
       if (event.type === 'FAR') return enter('follow', event.at);
       if (event.type === 'STILL') return enter('sit', event.at);
+      if (event.type === 'INACTIVE') return enter('sleep', event.at);
       return state;
     case 'follow':
       if (event.type === 'ARRIVED') return enter('idle', event.at);
       return state;
     case 'sit':
       if (event.type === 'FAR') return enter('follow', event.at);
+      if (event.type === 'INACTIVE') return enter('sleep', event.at);
+      return state;
+    case 'sleep':
+      if (event.type === 'WAKE') {
+        return { name: 'idle', since: event.at, wakingUntil: event.at + STRETCH_MS };
+      }
       return state;
     default: {
       const unreachable: never = state.name;
@@ -47,6 +64,11 @@ export function run(state: MachineState, events: readonly MachineEvent[]): Machi
   return events.reduce(transition, state);
 }
 
+/** True while the dog is still stretching after a nap. */
+export function isWaking(state: MachineState, now: number): boolean {
+  return state.wakingUntil !== undefined && now < state.wakingUntil;
+}
+
 /** What the dog can perceive this frame. */
 export interface Senses {
   now: number;
@@ -56,12 +78,20 @@ export interface Senses {
   distanceToTarget: number;
   /** Time the pointer last moved. */
   lastMoveAt: number;
+  /** Time of the last input of any kind (pointer, click, key, scroll, touch). */
+  lastInputAt: number;
 }
 
-/** Turn raw perception into machine events. Pure, so it is tested alongside `transition`. */
+/**
+ * Turn raw perception into machine events, in priority order. Pure, so it is tested
+ * alongside `transition`. WAKE comes last so a frame that wakes the dog cannot also
+ * send it running: it stretches first.
+ */
 export function sense(state: MachineState, s: Senses): MachineEvent[] {
   const events: MachineEvent[] = [];
   const at = s.now;
+  if (isWaking(state, s.now)) return events;
+
   if (
     s.distanceToCursor !== null &&
     s.distanceToCursor > FOLLOW_THRESHOLD &&
@@ -74,6 +104,12 @@ export function sense(state: MachineState, s: Senses): MachineEvent[] {
   }
   if (s.now - s.lastMoveAt >= SIT_AFTER_MS) {
     events.push({ type: 'STILL', at });
+  }
+  if (s.now - s.lastInputAt >= SLEEP_AFTER_MS) {
+    events.push({ type: 'INACTIVE', at });
+  }
+  if (state.name === 'sleep' && s.lastInputAt > state.since) {
+    events.push({ type: 'WAKE', at });
   }
   return events;
 }
