@@ -8,10 +8,12 @@ import {
   FACE_CURSOR_MIN_DX,
   FACING_DEAD_ZONE,
   FOLLOW_EASE,
+  HEART_EVERY_MS,
   HEAD_TILT_MAX_DEG,
   LOOK_MAX_PX,
   MAX_SPEED,
   MIN_SPEED,
+  PET_MARGIN,
   PERCH_SINK,
   SPEED_GAIN,
   START_OFFSET,
@@ -20,10 +22,19 @@ import {
   TROT_SLOW_S,
   TWITCH_MAX_MS,
   TWITCH_MIN_MS,
+  WIGGLE_FLIPS,
+  WIGGLE_MIN_STEP,
+  WIGGLE_SAMPLES,
+  WIGGLE_WINDOW_MS,
 } from './config';
+import type { Barker } from './audio';
 import type { DogView } from './dog-view';
 import type { Input } from './input';
 import { createLoop, type Loop } from './loop';
+
+export interface Pawsor extends Loop {
+  setSound(on: boolean): void;
+}
 import {
   clamp,
   clampToViewport,
@@ -39,6 +50,7 @@ import {
   type Size,
 } from './motion';
 import { readSelectionLine } from './selection';
+import { countFlips, pushSample, type Sample } from './wiggle';
 import {
   initialState,
   isWaking,
@@ -53,7 +65,12 @@ const DOG_SIZE: Size = { width: DOG_WIDTH, height: DOG_HEIGHT };
 const between = (min: number, max: number): number => min + Math.random() * (max - min);
 
 /** The controller: reads input, senses events, runs the machine, moves and renders. */
-export function createPawsor(view: DogView, input: Input, win: Window = window): Loop {
+export function createPawsor(
+  view: DogView,
+  input: Input,
+  barker: Barker | null,
+  win: Window = window,
+): Pawsor {
   const viewport = (): Size => ({ width: win.innerWidth, height: win.innerHeight });
   let pos: Point = clampToViewport(
     { x: START_OFFSET.x, y: win.innerHeight - START_OFFSET.y },
@@ -65,6 +82,12 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
   let machine: MachineState = initialState(performance.now());
   let nextBlinkAt = performance.now() + between(BLINK_MIN_MS, BLINK_MAX_MS);
   let nextTwitchAt = performance.now() + between(TWITCH_MIN_MS, TWITCH_MAX_MS);
+  let sound = false;
+  let samples: Sample[] = [];
+  let lastSampleAt = -Infinity;
+  let lastWiggleAt = -Infinity;
+  let nextHeartAt = 0;
+  let barkedThisSession = false;
   view.setPosition(pos);
 
   const tick = (dt: number, now: number): void => {
@@ -73,6 +96,21 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
     const cursor = input.state.pointer;
     // Only touch the selection API after a selectionchange said there might be one.
     const line = input.state.selectionActive ? readSelectionLine(win) : null;
+
+    // Petting: sample horizontal pointer moves while the cursor is over the dog.
+    const overDog =
+      cursor !== null &&
+      Math.abs(cursor.x - pos.x) <= DOG_WIDTH / 2 + PET_MARGIN &&
+      Math.abs(cursor.y - pos.y) <= DOG_HEIGHT / 2 + PET_MARGIN;
+    if (!overDog) {
+      samples = [];
+    } else if (input.state.lastMoveAt !== lastSampleAt) {
+      lastSampleAt = input.state.lastMoveAt;
+      samples = pushSample(samples, { t: lastSampleAt, x: cursor.x }, WIGGLE_SAMPLES);
+    }
+    const wiggling =
+      overDog && countFlips(samples, now, WIGGLE_WINDOW_MS, WIGGLE_MIN_STEP) >= WIGGLE_FLIPS;
+    if (wiggling) lastWiggleAt = now;
 
     // 2. Sense and transition.
     const target = cursor
@@ -89,8 +127,24 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
         lastInputAt: input.state.lastInputAt,
         clicks: input.state.clicks,
         hasSelection: line !== null,
+        wiggling,
+        lastWiggleAt,
       }),
     );
+
+    // Petted: hearts while it lasts, one boop per session.
+    if (machine.name === 'petted') {
+      if (now >= nextHeartAt) {
+        view.spawnHeart(pos);
+        nextHeartAt = now + HEART_EVERY_MS;
+      }
+      if (sound && !barkedThisSession) {
+        barker?.boop();
+        barkedThisSession = true;
+      }
+    } else {
+      barkedThisSession = false;
+    }
 
     // 3. Move: farther away → faster; legs keep pace with the speed.
     let visual: StateName = machine.name;
@@ -112,7 +166,8 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
     pos = clampToViewport(pos, vp, DOG_SIZE, EDGE_PADDING);
 
     // 4. Idle life.
-    const idleLike = visual === 'idle' || visual === 'sit' || visual === 'perch';
+    const idleLike =
+      visual === 'idle' || visual === 'sit' || visual === 'perch' || visual === 'petted';
     const asleep = machine.name === 'sleep';
     if (now >= nextBlinkAt) {
       if (!asleep) view.blink();
@@ -144,5 +199,11 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
     view.setPosition(pos);
   };
 
-  return createLoop(tick);
+  const loop = createLoop(tick);
+  return {
+    ...loop,
+    setSound(on) {
+      sound = on;
+    },
+  };
 }

@@ -388,3 +388,63 @@
     transform: scale(0.9) translateY(-4px);
   }
 }
+
+/* Petted: fast wag, happy eyes, a little wiggle of joy. */
+.pawsor-dog[data-state='petted'] [data-part='tail'] {
+  animation: pawsor-wag 0.25s ease-in-out infinite;
+}
+.pawsor-dog[data-state='petted'] .pawsor-eyes-open {
+  display: none;
+}
+.pawsor-dog[data-state='petted'] .pawsor-eyes-happy {
+  display: inline;
+}
+.pawsor-dog[data-state='petted'] [data-part='body'] {
+  animation: pawsor-joy 0.5s ease-in-out infinite;
+}
+.pawsor-dog[data-state='petted'] [data-part='ear-left'],
+.pawsor-dog[data-state='petted'] [data-part='ear-right'] {
+  transform: rotate(-12deg);
+}
+.pawsor-dog[data-state='petted'] .pawsor-cheek {
+  opacity: 1;
+}
+
+.pawsor-heart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.pawsor-heart svg {
+  display: block;
+  animation: pawsor-float-heart 0.9s ease-out forwards;
+}
+
+@keyframes pawsor-joy {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes pawsor-float-heart {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+}

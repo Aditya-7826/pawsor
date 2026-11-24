@@ -1,6 +1,7 @@
 import {
   ARRIVE_EPSILON,
   FOLLOW_THRESHOLD,
+  PETTED_MS,
   SIT_AFTER_MS,
   SLEEP_AFTER_MS,
   STARTLE_CLICKS,
@@ -11,7 +12,7 @@ import {
 
 /** Pure behaviour logic. No DOM, no clocks: time arrives on events. */
 
-export type StateName = 'idle' | 'follow' | 'sit' | 'sleep' | 'startled' | 'perch';
+export type StateName = 'idle' | 'follow' | 'sit' | 'sleep' | 'startled' | 'perch' | 'petted';
 
 export interface MachineState {
   readonly name: StateName;
@@ -30,7 +31,8 @@ export type MachineEvent =
   | { readonly type: 'RAPID_CLICKS'; readonly at: number }
   | { readonly type: 'TIMEOUT'; readonly at: number }
   | { readonly type: 'SELECT'; readonly at: number }
-  | { readonly type: 'DESELECT'; readonly at: number };
+  | { readonly type: 'DESELECT'; readonly at: number }
+  | { readonly type: 'WIGGLE'; readonly at: number };
 
 export const initialState = (at = 0): MachineState => ({ name: 'idle', since: at });
 
@@ -48,6 +50,7 @@ export function transition(state: MachineState, event: MachineEvent): MachineSta
   switch (state.name) {
     case 'idle':
       if (event.type === 'SELECT') return enter('perch', event.at);
+      if (event.type === 'WIGGLE') return enter('petted', event.at);
       if (event.type === 'FAR') return enter('follow', event.at);
       if (event.type === 'STILL') return enter('sit', event.at);
       if (event.type === 'INACTIVE') return enter('sleep', event.at);
@@ -58,6 +61,7 @@ export function transition(state: MachineState, event: MachineEvent): MachineSta
       return state;
     case 'sit':
       if (event.type === 'SELECT') return enter('perch', event.at);
+      if (event.type === 'WIGGLE') return enter('petted', event.at);
       if (event.type === 'FAR') return enter('follow', event.at);
       if (event.type === 'INACTIVE') return enter('sleep', event.at);
       return state;
@@ -69,6 +73,10 @@ export function transition(state: MachineState, event: MachineEvent): MachineSta
     case 'perch':
       if (event.type === 'DESELECT') return enter('idle', event.at);
       if (event.type === 'INACTIVE') return enter('sleep', event.at);
+      return state;
+    case 'petted':
+      if (event.type === 'SELECT') return enter('perch', event.at);
+      if (event.type === 'TIMEOUT') return enter('idle', event.at);
       return state;
     case 'startled':
       if (event.type === 'TIMEOUT') return enter('idle', event.at);
@@ -105,6 +113,10 @@ export interface Senses {
   clicks: readonly number[];
   /** A non-empty text selection exists on the page. */
   hasSelection: boolean;
+  /** The pointer is wiggling back and forth over the dog right now. */
+  wiggling: boolean;
+  /** Last time a wiggle was detected (or -Infinity). */
+  lastWiggleAt: number;
 }
 
 /** How many of `times` fall within the last `windowMs` before `now`. */
@@ -146,6 +158,12 @@ export function sense(state: MachineState, s: Senses): MachineEvent[] {
   }
   if (countRecent(s.clicks, s.now, STARTLE_WINDOW_MS) >= STARTLE_CLICKS) {
     events.push({ type: 'RAPID_CLICKS', at });
+  }
+  if (s.wiggling) {
+    events.push({ type: 'WIGGLE', at });
+  }
+  if (state.name === 'petted' && s.now - s.lastWiggleAt >= PETTED_MS) {
+    events.push({ type: 'TIMEOUT', at });
   }
   if (state.name === 'startled' && s.now - state.since >= STARTLE_MS) {
     events.push({ type: 'TIMEOUT', at });

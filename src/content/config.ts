@@ -65,3 +65,17 @@ export const CLICK_HISTORY = 8;
 
 /** How far the dog's paws sink onto the selected line so it looks seated on the text. */
 export const PERCH_SINK = 6;
+
+/** Petting: this many horizontal direction changes within the window, over the dog. */
+export const WIGGLE_FLIPS = 4;
+export const WIGGLE_WINDOW_MS = 1000;
+/** Pointer must travel this far the other way for a direction change to count. */
+export const WIGGLE_MIN_STEP = 6;
+/** Extra px around the dog's box that still counts as "over the dog". */
+export const PET_MARGIN = 10;
+export const WIGGLE_SAMPLES = 32;
+/** The dog stays happy this long after the last wiggle. */
+export const PETTED_MS = 1500;
+export const MAX_HEARTS = 6;
+export const HEART_EVERY_MS = 280;
+export const HEART_LIFE_MS = 900;

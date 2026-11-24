@@ -1,4 +1,4 @@
-import { BLINK_MS, DOG_HEIGHT, DOG_WIDTH, TWITCH_MS } from './config';
+import { BLINK_MS, DOG_HEIGHT, DOG_WIDTH, HEART_LIFE_MS, MAX_HEARTS, TWITCH_MS } from './config';
 import { createDogSvg } from './dog-svg';
 import type { Facing, Point } from './motion';
 import type { StateName } from './state-machine';
@@ -21,7 +21,15 @@ export interface DogView {
   setLook(x: number, y: number, tiltDeg: number): void;
   blink(): void;
   twitch(): void;
+  /** Float a small heart up from the dog at `p`. Capped; returns false when at the cap. */
+  spawnHeart(p: Point): boolean;
 }
+
+const HEART_SVG =
+  '<svg viewBox="0 0 24 22" width="14" height="13" aria-hidden="true" focusable="false">' +
+  '<path d="M12 21 C5 15 1 11 1 6.5 C1 3.4 3.4 1 6.4 1 C8.6 1 10.6 2.3 12 4.4 ' +
+  'C13.4 2.3 15.4 1 17.6 1 C20.6 1 23 3.4 23 6.5 C23 11 19 15 12 21 Z" fill="var(--blush, #ff9eae)" ' +
+  'stroke="#e46f86" stroke-width="1.4"/></svg>';
 
 /** Add a class for `ms`, restarting the animation if it is already running. */
 function pulseClass(el: HTMLElement, cls: string, ms: number): void {
@@ -58,6 +66,7 @@ export function createDogView(overlay: HTMLElement): DogView {
   dog.append(flip, zzz, bang);
   overlay.append(dog);
 
+  let hearts = 0;
   let lastLook = '';
   let lastTrot = 0;
 
@@ -92,6 +101,22 @@ export function createDogView(overlay: HTMLElement): DogView {
       dog.style.setProperty('--look-x', `${x.toFixed(1)}px`);
       dog.style.setProperty('--look-y', `${y.toFixed(1)}px`);
       dog.style.setProperty('--head-tilt', `${tiltDeg.toFixed(1)}deg`);
+    },
+    spawnHeart(p) {
+      if (hearts >= MAX_HEARTS) return false;
+      hearts++;
+      const heart = doc.createElement('div');
+      heart.className = 'pawsor-heart';
+      heart.innerHTML = HEART_SVG;
+      const x = p.x + (Math.random() - 0.5) * 30 - 7;
+      const y = p.y - DOG_HEIGHT / 2 - 4;
+      heart.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      overlay.append(heart);
+      window.setTimeout(() => {
+        heart.remove();
+        hearts--;
+      }, HEART_LIFE_MS);
+      return true;
     },
     blink() {
       pulseClass(dog, 'is-blinking', BLINK_MS);

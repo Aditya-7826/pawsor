@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ARRIVE_EPSILON,
   FOLLOW_THRESHOLD,
+  PETTED_MS,
   SIT_AFTER_MS,
   SLEEP_AFTER_MS,
   STARTLE_MS,
@@ -71,6 +72,8 @@ describe('sense', () => {
     lastInputAt: 1000,
     clicks: [],
     hasSelection: false,
+    wiggling: false,
+    lastWiggleAt: -Infinity,
   };
 
   it('reports nothing when the cursor is near and moving', () => {
@@ -145,6 +148,8 @@ describe('sense: sleep and wake', () => {
     lastInputAt: 20_000 - SLEEP_AFTER_MS,
     clicks: [],
     hasSelection: false,
+    wiggling: false,
+    lastWiggleAt: -Infinity,
   };
 
   it('reports INACTIVE after the sleep delay; idle goes sit then sleep in one frame', () => {
@@ -181,6 +186,8 @@ describe('startled', () => {
     lastInputAt: 10_000,
     clicks: [],
     hasSelection: false,
+    wiggling: false,
+    lastWiggleAt: -Infinity,
   };
 
   it('counts only clicks inside the window', () => {
@@ -230,6 +237,8 @@ describe('perch', () => {
     lastInputAt: 10_000,
     clicks: [],
     hasSelection: false,
+    wiggling: false,
+    lastWiggleAt: -Infinity,
   };
 
   it('idle, follow and sit perch on a selection', () => {
@@ -266,5 +275,46 @@ describe('perch', () => {
       { type: 'SELECT', at: 1000 },
     ]);
     expect(after.name).toBe('perch');
+  });
+});
+
+describe('petted', () => {
+  const calm: Senses = {
+    now: 10_000,
+    distanceToCursor: 30,
+    distanceToTarget: 0,
+    lastMoveAt: 10_000,
+    lastInputAt: 10_000,
+    clicks: [],
+    hasSelection: false,
+    wiggling: false,
+    lastWiggleAt: -Infinity,
+  };
+
+  it('idle and sit get petted by a wiggle', () => {
+    for (const name of ['idle', 'sit'] as const) {
+      const s = run(at(name), sense(at(name), { ...calm, wiggling: true, lastWiggleAt: 10_000 }));
+      expect(s.name, name).toBe('petted');
+    }
+  });
+
+  it('a running or sleeping dog is not petted', () => {
+    const follow = at('follow');
+    const sleep = at('sleep', 20_000);
+    expect(transition(follow, { type: 'WIGGLE', at: 1 })).toBe(follow);
+    expect(transition(sleep, { type: 'WIGGLE', at: 1 })).toBe(sleep);
+  });
+
+  it('stays petted while wiggling continues, then settles to idle', () => {
+    const petted = at('petted', 9_000);
+    const still = { ...calm, lastWiggleAt: 10_000 - PETTED_MS + 1 };
+    expect(run(petted, sense(petted, still))).toBe(petted);
+    const done = { ...calm, lastWiggleAt: 10_000 - PETTED_MS };
+    expect(run(petted, sense(petted, done))).toEqual(at('idle', 10_000));
+  });
+
+  it('startle and selection win over petting', () => {
+    expect(transition(at('petted'), { type: 'RAPID_CLICKS', at: 1 }).name).toBe('startled');
+    expect(transition(at('petted'), { type: 'SELECT', at: 1 }).name).toBe('perch');
   });
 });

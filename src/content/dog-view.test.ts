@@ -69,3 +69,14 @@ describe('dog view sleep', () => {
     expect('waking' in view.dog.dataset).toBe(false);
   });
 });
+
+describe('hearts', () => {
+  it('spawns hearts in the overlay up to the cap', () => {
+    const overlay = document.createElement('div');
+    const view = createDogView(overlay);
+    const results = Array.from({ length: 8 }, () => view.spawnHeart({ x: 100, y: 100 }));
+    expect(results.filter(Boolean)).toHaveLength(6);
+    expect(overlay.querySelectorAll('.pawsor-heart')).toHaveLength(6);
+    expect(overlay.querySelector('.pawsor-heart svg')?.getAttribute('aria-hidden')).toBe('true');
+  });
+});

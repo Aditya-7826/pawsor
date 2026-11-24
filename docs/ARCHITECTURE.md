@@ -16,6 +16,7 @@ src/
     motion.ts          pure lerp / speed / clamp / facing math
     wiggle.ts          pure wiggle (petting) detector
     input.ts           passive listeners → InputState
+    selection.ts       reads the first line rect of the text selection (never modifies it)
     loop.ts            generic rAF loop with clamped delta time
     pawsor.ts          controller: per-frame tick
     dog-svg.ts         the puppy SVG with named part groups
