@@ -62,3 +62,29 @@ export function clampToViewport(p: Point, viewport: Size, size: Size, pad: numbe
     y: clamp(p.y, hh, viewport.height - hh),
   };
 }
+
+export type Facing = 'left' | 'right';
+
+/** The farther the cursor, the faster the dog runs, between `min` and `max` px/s. */
+export function speedFor(distanceToTarget: number, gain: number, min: number, max: number): number {
+  return clamp(distanceToTarget * gain, min, max);
+}
+
+/** Flip only when the horizontal intent is clearly past the dead zone. */
+export function nextFacing(current: Facing, dx: number, deadZone: number): Facing {
+  if (dx > deadZone) return 'right';
+  if (dx < -deadZone) return 'left';
+  return current;
+}
+
+/** Map speed (px/s) to a leg-cycle duration: faster running, quicker steps. */
+export function trotDuration(
+  speed: number,
+  minSpeed: number,
+  maxSpeed: number,
+  slowS: number,
+  fastS: number,
+): number {
+  const t = clamp((speed - minSpeed) / Math.max(maxSpeed - minSpeed, 1), 0, 1);
+  return slowS + (fastS - slowS) * t;
+}

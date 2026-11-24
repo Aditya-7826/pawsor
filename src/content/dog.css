@@ -149,3 +149,43 @@
     transform: rotate(14deg);
   }
 }
+
+/* Follow: trot. Diagonal leg pairs swing in opposite phase; body bobs twice per cycle. */
+.pawsor-dog[data-state='follow'] [data-part='leg-front-near'],
+.pawsor-dog[data-state='follow'] [data-part='leg-back-far'] {
+  animation: pawsor-trot var(--trot-speed) ease-in-out infinite;
+}
+.pawsor-dog[data-state='follow'] [data-part='leg-back-near'],
+.pawsor-dog[data-state='follow'] [data-part='leg-front-far'] {
+  animation: pawsor-trot var(--trot-speed) ease-in-out infinite reverse;
+}
+.pawsor-dog[data-state='follow'] [data-part='rig'] {
+  animation: pawsor-bob calc(var(--trot-speed) / 2) ease-in-out infinite;
+}
+.pawsor-dog[data-state='follow'] [data-part='tail'] {
+  animation: pawsor-wag calc(var(--trot-speed) * 1.5) ease-in-out infinite;
+}
+.pawsor-dog[data-state='follow'] [data-part='ear-left'],
+.pawsor-dog[data-state='follow'] [data-part='ear-right'] {
+  transform: rotate(-8deg);
+}
+
+@keyframes pawsor-trot {
+  0%,
+  100% {
+    transform: rotate(24deg);
+  }
+  50% {
+    transform: rotate(-24deg);
+  }
+}
+
+@keyframes pawsor-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}

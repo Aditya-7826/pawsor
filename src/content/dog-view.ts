@@ -1,6 +1,6 @@
 import { BLINK_MS, DOG_HEIGHT, DOG_WIDTH, TWITCH_MS } from './config';
 import { createDogSvg } from './dog-svg';
-import type { Point } from './motion';
+import type { Facing, Point } from './motion';
 import type { StateName } from './state-machine';
 
 /**
@@ -12,6 +12,9 @@ export interface DogView {
   dog: HTMLDivElement;
   setPosition(p: Point): void;
   setState(name: StateName): void;
+  setFacing(facing: Facing): void;
+  /** Leg-cycle duration in seconds. */
+  setTrotSpeed(seconds: number): void;
   /** Eye offset in px and head tilt in degrees, in the dog's own (right-facing) frame. */
   setLook(x: number, y: number, tiltDeg: number): void;
   blink(): void;
@@ -43,6 +46,7 @@ export function createDogView(overlay: HTMLElement): DogView {
   overlay.append(dog);
 
   let lastLook = '';
+  let lastTrot = 0;
 
   return {
     dog,
@@ -53,6 +57,15 @@ export function createDogView(overlay: HTMLElement): DogView {
     },
     setState(name) {
       if (dog.dataset['state'] !== name) dog.dataset['state'] = name;
+    },
+    setFacing(facing) {
+      if (dog.dataset['facing'] !== facing) dog.dataset['facing'] = facing;
+    },
+    setTrotSpeed(seconds) {
+      // Small changes would restart the animation for nothing.
+      if (Math.abs(seconds - lastTrot) < 0.02) return;
+      lastTrot = seconds;
+      dog.style.setProperty('--trot-speed', `${seconds.toFixed(2)}s`);
     },
     setLook(x, y, tiltDeg) {
       const key = `${x.toFixed(1)}|${y.toFixed(1)}|${tiltDeg.toFixed(1)}`;

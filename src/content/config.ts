@@ -38,3 +38,14 @@ export const TWITCH_MS = 360;
 /** How far the eyes shift and the head tilts toward the cursor. */
 export const LOOK_MAX_PX = 1.6;
 export const HEAD_TILT_MAX_DEG = 6;
+
+/** Speed scaling: px/s per px of distance, with a floor so short hops still look lively. */
+export const SPEED_GAIN = 2.2;
+export const MIN_SPEED = 140;
+/** Horizontal movement smaller than this does not flip the dog (prevents flicker). */
+export const FACING_DEAD_ZONE = 4;
+/** When idle, the dog turns to face the cursor once it is this far to the other side. */
+export const FACE_CURSOR_MIN_DX = 24;
+/** Leg cycle duration at the slowest and fastest trot (seconds). */
+export const TROT_SLOW_S = 0.5;
+export const TROT_FAST_S = 0.22;

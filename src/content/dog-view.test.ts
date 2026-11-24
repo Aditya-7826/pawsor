@@ -38,3 +38,17 @@ describe('dog view state and look', () => {
     expect(view.dog.style.getPropertyValue('--head-tilt')).toBe('4.0deg');
   });
 });
+
+describe('dog view facing and trot', () => {
+  it('writes facing and only updates trot speed on meaningful change', () => {
+    const view = createDogView(document.createElement('div'));
+    view.setFacing('left');
+    expect(view.dog.dataset['facing']).toBe('left');
+    view.setTrotSpeed(0.3);
+    expect(view.dog.style.getPropertyValue('--trot-speed')).toBe('0.30s');
+    view.setTrotSpeed(0.31);
+    expect(view.dog.style.getPropertyValue('--trot-speed')).toBe('0.30s');
+    view.setTrotSpeed(0.4);
+    expect(view.dog.style.getPropertyValue('--trot-speed')).toBe('0.40s');
+  });
+});

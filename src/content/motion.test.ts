@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { clamp, clampToViewport, distance, easeFactor, followTarget, stepToward } from './motion';
+import {
+  clamp,
+  clampToViewport,
+  distance,
+  easeFactor,
+  followTarget,
+  nextFacing,
+  speedFor,
+  stepToward,
+  trotDuration,
+} from './motion';
 
 describe('clamp', () => {
   it('limits to range and centres when the range is inverted', () => {
@@ -72,5 +82,31 @@ describe('clampToViewport', () => {
       x: 20,
       y: 20,
     });
+  });
+});
+
+describe('speedFor', () => {
+  it('runs faster when the target is farther, within limits', () => {
+    expect(speedFor(10, 2, 100, 500)).toBe(100);
+    expect(speedFor(100, 2, 100, 500)).toBe(200);
+    expect(speedFor(1000, 2, 100, 500)).toBe(500);
+  });
+});
+
+describe('nextFacing', () => {
+  it('flips past the dead zone and holds inside it', () => {
+    expect(nextFacing('right', -5, 4)).toBe('left');
+    expect(nextFacing('left', 5, 4)).toBe('right');
+    expect(nextFacing('left', 3, 4)).toBe('left');
+    expect(nextFacing('right', -3, 4)).toBe('right');
+  });
+});
+
+describe('trotDuration', () => {
+  it('maps speed to a leg-cycle duration', () => {
+    expect(trotDuration(100, 100, 500, 0.5, 0.2)).toBeCloseTo(0.5);
+    expect(trotDuration(500, 100, 500, 0.5, 0.2)).toBeCloseTo(0.2);
+    expect(trotDuration(300, 100, 500, 0.5, 0.2)).toBeCloseTo(0.35);
+    expect(trotDuration(9999, 100, 500, 0.5, 0.2)).toBeCloseTo(0.2);
   });
 });
