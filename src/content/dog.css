@@ -117,3 +117,35 @@
     transform: rotate(-6deg);
   }
 }
+
+/* Sit: rump down, front up, back legs tucked, slow wag. */
+.pawsor-dog[data-state='sit'] [data-part='rig'] {
+  transform: rotate(-9deg) translateY(2px);
+  transform-origin: 20% 100%;
+  transition: transform var(--t-med, 260ms) var(--ease-soft, ease-out);
+}
+.pawsor-dog[data-state='sit'] [data-part='leg-back-near'],
+.pawsor-dog[data-state='sit'] [data-part='leg-back-far'] {
+  transform: scaleY(0.55) translateY(-2px);
+}
+.pawsor-dog[data-state='sit'] [data-part='leg-front-near'],
+.pawsor-dog[data-state='sit'] [data-part='leg-front-far'] {
+  transform: scaleY(1.22);
+}
+.pawsor-dog[data-state='sit'] [data-part='tail'] {
+  animation: pawsor-wag 1.2s ease-in-out infinite;
+}
+.pawsor-svg [data-part='rig'],
+.pawsor-svg .pawsor-leg {
+  transition: transform var(--t-med, 260ms) var(--ease-soft, ease-out);
+}
+
+@keyframes pawsor-wag {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}

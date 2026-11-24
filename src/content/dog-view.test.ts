@@ -22,3 +22,19 @@ describe('createDogView', () => {
     expect(dog.dataset['coat']).toBe('honey');
   });
 });
+
+describe('dog view state and look', () => {
+  it('writes the behaviour state as a data attribute', () => {
+    const view = createDogView(document.createElement('div'));
+    view.setState('sit');
+    expect(view.dog.dataset['state']).toBe('sit');
+  });
+
+  it('writes look offsets and head tilt as custom properties', () => {
+    const view = createDogView(document.createElement('div'));
+    view.setLook(1.25, -0.5, 4);
+    expect(view.dog.style.getPropertyValue('--look-x')).toBe('1.3px');
+    expect(view.dog.style.getPropertyValue('--look-y')).toBe('-0.5px');
+    expect(view.dog.style.getPropertyValue('--head-tilt')).toBe('4.0deg');
+  });
+});

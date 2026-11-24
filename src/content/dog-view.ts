@@ -1,6 +1,7 @@
-import { DOG_HEIGHT, DOG_WIDTH } from './config';
+import { BLINK_MS, DOG_HEIGHT, DOG_WIDTH, TWITCH_MS } from './config';
 import { createDogSvg } from './dog-svg';
 import type { Point } from './motion';
+import type { StateName } from './state-machine';
 
 /**
  * Owns the dog element inside the overlay. Write-only: it never reads layout, so the
@@ -10,6 +11,21 @@ import type { Point } from './motion';
 export interface DogView {
   dog: HTMLDivElement;
   setPosition(p: Point): void;
+  setState(name: StateName): void;
+  /** Eye offset in px and head tilt in degrees, in the dog's own (right-facing) frame. */
+  setLook(x: number, y: number, tiltDeg: number): void;
+  blink(): void;
+  twitch(): void;
+}
+
+/** Add a class for `ms`, restarting the animation if it is already running. */
+function pulseClass(el: HTMLElement, cls: string, ms: number): void {
+  el.classList.remove(cls);
+  // A frame gap restarts the CSS animation without forcing layout.
+  requestAnimationFrame(() => {
+    el.classList.add(cls);
+    window.setTimeout(() => el.classList.remove(cls), ms);
+  });
 }
 
 export function createDogView(overlay: HTMLElement): DogView {
@@ -26,12 +42,31 @@ export function createDogView(overlay: HTMLElement): DogView {
   dog.append(flip);
   overlay.append(dog);
 
+  let lastLook = '';
+
   return {
     dog,
     setPosition(p) {
       const x = Math.round((p.x - DOG_WIDTH / 2) * 10) / 10;
       const y = Math.round((p.y - DOG_HEIGHT / 2) * 10) / 10;
       dog.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    },
+    setState(name) {
+      if (dog.dataset['state'] !== name) dog.dataset['state'] = name;
+    },
+    setLook(x, y, tiltDeg) {
+      const key = `${x.toFixed(1)}|${y.toFixed(1)}|${tiltDeg.toFixed(1)}`;
+      if (key === lastLook) return;
+      lastLook = key;
+      dog.style.setProperty('--look-x', `${x.toFixed(1)}px`);
+      dog.style.setProperty('--look-y', `${y.toFixed(1)}px`);
+      dog.style.setProperty('--head-tilt', `${tiltDeg.toFixed(1)}deg`);
+    },
+    blink() {
+      pulseClass(dog, 'is-blinking', BLINK_MS);
+    },
+    twitch() {
+      pulseClass(dog, 'is-twitching', TWITCH_MS);
     },
   };
 }

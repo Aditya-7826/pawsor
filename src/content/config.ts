@@ -22,3 +22,19 @@ export const FOLLOW_EASE = 4;
 export const MAX_SPEED = 520;
 /** Longest frame step; protects against jumps after a stall or tab switch. */
 export const MAX_DT_MS = 50;
+
+/** Within this many px of its target the dog counts as arrived. */
+export const ARRIVE_EPSILON = 2;
+/** Cursor still this long → the dog sits. */
+export const SIT_AFTER_MS = 2000;
+
+/** Idle life: blink and ear twitch timings. */
+export const BLINK_MIN_MS = 2000;
+export const BLINK_MAX_MS = 6000;
+export const BLINK_MS = 140;
+export const TWITCH_MIN_MS = 4000;
+export const TWITCH_MAX_MS = 9000;
+export const TWITCH_MS = 360;
+/** How far the eyes shift and the head tilts toward the cursor. */
+export const LOOK_MAX_PX = 1.6;
+export const HEAD_TILT_MAX_DEG = 6;
