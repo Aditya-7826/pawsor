@@ -62,7 +62,8 @@ document_idle
        └─ storage.onChanged → applySettings (live updates)
 ```
 
-**Shadow DOM**: closed mode so page scripts cannot reach in. Styles are adopted with
+**Shadow DOM**: closed mode so page scripts cannot reach in. Host styles are set with
+`style.setProperty(..., 'important')` because a `style` attribute is blocked by strict CSPs. Styles are adopted with
 `new CSSStyleSheet()` + `adoptedStyleSheets` (not blocked by page CSP); if that fails, a
 `<style>` element is used. `:host { all: initial }` blocks inherited page styles.
 
