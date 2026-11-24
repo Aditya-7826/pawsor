@@ -1,10 +1,6 @@
 import { DOG_HEIGHT, DOG_WIDTH } from './config';
 import { createDogSvg } from './dog-svg';
-
-export interface Point {
-  x: number;
-  y: number;
-}
+import type { Point } from './motion';
 
 /**
  * Owns the dog element inside the overlay. Write-only: it never reads layout, so the
