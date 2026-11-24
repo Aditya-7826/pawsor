@@ -139,6 +139,11 @@ page events ──► input.ts ──► InputState (pointer, last move/input ti
 - `dt` is clamped to 50ms; the first frame after a resume has `dt = 0`.
 - Lerp: `pos += (target - pos) * (1 - exp(-k·dt))`, capped by a speed that grows with
   distance.
+- Reduced motion (`matchMedia`, live): instead of stepping, the dog fades out for
+  `FADE_MS`, jumps to its target and fades back in; CSS turns off keyframes.
+- Touch: `pointerdown` with `pointerType` touch or pen sets the pointer, so the dog
+  follows taps.
+- Resize: the position is clamped to the viewport every frame.
 - Paused on `visibilitychange` (hidden), while fullscreen, while hidden by settings and
   on disabled sites.
 

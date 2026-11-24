@@ -5,6 +5,7 @@ import {
   DOG_HEIGHT,
   DOG_WIDTH,
   EDGE_PADDING,
+  FADE_MS,
   FACE_CURSOR_MIN_DX,
   FACING_DEAD_ZONE,
   FOLLOW_EASE,
@@ -34,6 +35,8 @@ import { createLoop, type Loop } from './loop';
 
 export interface Pawsor extends Loop {
   setSound(on: boolean): void;
+  /** prefers-reduced-motion: move by gentle fade instead of trotting. */
+  setReducedMotion(on: boolean): void;
 }
 import {
   clamp,
@@ -88,6 +91,9 @@ export function createPawsor(
   let lastWiggleAt = -Infinity;
   let nextHeartAt = 0;
   let barkedThisSession = false;
+  let reducedMotion = false;
+  let fadeStartedAt: number | null = null;
+  let nextFadeAt = 0;
   view.setPosition(pos);
 
   const tick = (dt: number, now: number): void => {
@@ -154,7 +160,21 @@ export function createPawsor(
         : machine.name === 'perch' && line
           ? clampToViewport(perchPoint(line, DOG_HEIGHT, PERCH_SINK), vp, DOG_SIZE, EDGE_PADDING)
           : null;
-    if (goal) {
+    if (goal && reducedMotion) {
+      // Gentle teleport: fade out, move, fade back in. No travel animation at all.
+      const remaining = distance(pos, goal);
+      if (fadeStartedAt === null && remaining > ARRIVE_EPSILON && now >= nextFadeAt) {
+        fadeStartedAt = now;
+        view.setFaded(true);
+      } else if (fadeStartedAt !== null && now - fadeStartedAt >= FADE_MS) {
+        facing = nextFacing(facing, goal.x - pos.x, FACING_DEAD_ZONE);
+        pos = goal;
+        fadeStartedAt = null;
+        nextFadeAt = now + FADE_MS;
+        view.setFaded(false);
+      }
+      if (machine.name === 'follow') visual = 'idle';
+    } else if (goal) {
       const remaining = distance(pos, goal);
       const speed = speedFor(remaining, SPEED_GAIN, MIN_SPEED, MAX_SPEED);
       pos = stepToward(pos, goal, dt, FOLLOW_EASE, speed);
@@ -162,6 +182,10 @@ export function createPawsor(
       view.setTrotSpeed(trotDuration(speed, MIN_SPEED, MAX_SPEED, TROT_SLOW_S, TROT_FAST_S));
       // Walking over to the text looks like a trot until the dog sits down on it.
       if (machine.name === 'perch' && remaining > ARRIVE_EPSILON) visual = 'follow';
+    }
+    if (!goal && fadeStartedAt !== null) {
+      fadeStartedAt = null;
+      view.setFaded(false);
     }
     pos = clampToViewport(pos, vp, DOG_SIZE, EDGE_PADDING);
 
@@ -204,6 +228,13 @@ export function createPawsor(
     ...loop,
     setSound(on) {
       sound = on;
+    },
+    setReducedMotion(on) {
+      reducedMotion = on;
+      if (!on && fadeStartedAt !== null) {
+        fadeStartedAt = null;
+        view.setFaded(false);
+      }
     },
   };
 }

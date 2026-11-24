@@ -448,3 +448,53 @@
     transform: translateY(-30px) scale(0.9);
   }
 }
+
+/* Reduced-motion moves fade the dog out and back in. */
+.pawsor-dog {
+  transition: opacity var(--t-med, 260ms) ease-out;
+}
+.pawsor-dog.is-faded {
+  opacity: 0;
+}
+
+/* Reduced motion: no bouncing, trotting, travelling particles or looping wiggles. */
+@media (prefers-reduced-motion: reduce) {
+  .pawsor-dog *,
+  .pawsor-dog *::before,
+  .pawsor-dog *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .pawsor-dog {
+    transition: opacity 200ms ease-out;
+  }
+  /* Keep the meaning, drop the motion: bubbles and hearts fade in place. */
+  .pawsor-zzz span {
+    opacity: 0.85 !important;
+  }
+  .pawsor-zzz span:nth-child(2) {
+    transform: translate(8px, -8px);
+  }
+  .pawsor-zzz span:nth-child(3) {
+    transform: translate(16px, -16px);
+  }
+  .pawsor-heart svg {
+    animation: pawsor-fade 0.9s ease-out forwards !important;
+  }
+  .pawsor-dog[data-state='startled'] .pawsor-bang {
+    animation: pawsor-fade 0.9s ease-out both !important;
+  }
+}
+
+@keyframes pawsor-fade {
+  0% {
+    opacity: 0;
+  }
+  25%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

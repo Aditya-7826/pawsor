@@ -51,14 +51,48 @@ export async function startApp(
   const input = createInput(win);
   const pawsor = createPawsor(view, input, createBarker(win), win);
 
-  const apply = (s: Settings): void => {
-    view.setCoat(s.coat);
-    pawsor.setSound(s.sound);
-    const show = shouldShow(s, win.location.hostname, false);
+  /** Show and run only when settings allow, not fullscreen, and the tab is visible. */
+  const refresh = (): void => {
+    const fullscreen = Boolean(doc.fullscreenElement);
+    const show = shouldShow(settings, win.location.hostname, fullscreen);
     host.setHidden(!show);
-    if (show) pawsor.start();
+    if (show && doc.visibilityState !== 'hidden') pawsor.start();
     else pawsor.stop();
   };
+
+  const apply = (s: Settings): void => {
+    settings = s;
+    view.setCoat(s.coat);
+    pawsor.setSound(s.sound);
+    refresh();
+  };
+
+  const events = new AbortController();
+  const opts = { signal: events.signal, passive: true };
+  doc.addEventListener('fullscreenchange', refresh, opts);
+  doc.addEventListener(
+    'visibilitychange',
+    () => {
+      if (doc.visibilityState === 'visible') {
+        // Coming back is activity: no instant nap just because the tab was in the background.
+        const t = win.performance.now();
+        input.state.lastInputAt = t;
+        input.state.lastMoveAt = t;
+      }
+      refresh();
+    },
+    opts,
+  );
+
+  // Reduced motion, including changes while the page is open.
+  const motionQuery =
+    typeof win.matchMedia === 'function'
+      ? win.matchMedia('(prefers-reduced-motion: reduce)')
+      : null;
+  if (motionQuery) {
+    pawsor.setReducedMotion(motionQuery.matches);
+    motionQuery.addEventListener('change', (e) => pawsor.setReducedMotion(e.matches), opts);
+  }
 
   const onMessage = (
     message: unknown,
@@ -73,6 +107,7 @@ export async function startApp(
   let timer = 0;
   const teardown = (): void => {
     win.clearInterval(timer);
+    events.abort();
     pawsor.stop();
     input.dispose();
     host.remove();

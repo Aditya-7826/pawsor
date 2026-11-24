@@ -80,3 +80,13 @@ describe('hearts', () => {
     expect(overlay.querySelector('.pawsor-heart svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 });
+
+describe('reduced motion fade', () => {
+  it('toggles the faded class', () => {
+    const view = createDogView(document.createElement('div'));
+    view.setFaded(true);
+    expect(view.dog.classList.contains('is-faded')).toBe(true);
+    view.setFaded(false);
+    expect(view.dog.classList.contains('is-faded')).toBe(false);
+  });
+});

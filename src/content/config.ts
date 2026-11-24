@@ -79,3 +79,6 @@ export const PETTED_MS = 1500;
 export const MAX_HEARTS = 6;
 export const HEART_EVERY_MS = 280;
 export const HEART_LIFE_MS = 900;
+
+/** Reduced motion: the dog fades out, moves, and fades back in instead of trotting. */
+export const FADE_MS = 220;

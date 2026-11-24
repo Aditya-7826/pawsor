@@ -64,3 +64,37 @@ describe('startApp', () => {
     app = null;
   });
 });
+
+describe('fullscreen and tab visibility', () => {
+  function setFullscreen(el: Element | null): void {
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => el });
+    document.dispatchEvent(new Event('fullscreenchange'));
+  }
+  function setVisibility(state: DocumentVisibilityState): void {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
+
+  afterEach(() => {
+    Reflect.deleteProperty(document, 'fullscreenElement');
+    Reflect.deleteProperty(document, 'visibilityState');
+  });
+
+  it('hides while something is fullscreen and returns afterwards', async () => {
+    app = await startApp(window, '', createChromeFake().api);
+    setFullscreen(document.body);
+    expect(hostEl()?.style.getPropertyValue('display')).toBe('none');
+    expect(app?.pawsor.isRunning()).toBe(false);
+    setFullscreen(null);
+    expect(hostEl()?.style.getPropertyValue('display')).toBe('block');
+    expect(app?.pawsor.isRunning()).toBe(true);
+  });
+
+  it('pauses the loop while the tab is hidden', async () => {
+    app = await startApp(window, '', createChromeFake().api);
+    setVisibility('hidden');
+    expect(app?.pawsor.isRunning()).toBe(false);
+    setVisibility('visible');
+    expect(app?.pawsor.isRunning()).toBe(true);
+  });
+});

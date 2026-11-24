@@ -51,8 +51,14 @@ export function createInput(
 
   win.addEventListener(
     'pointerdown',
-    () => {
-      state.clicks.push(now());
+    (e: PointerEvent) => {
+      const t = now();
+      // Touch screens have no hover: the dog follows where you tap.
+      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+        state.pointer = { x: e.clientX, y: e.clientY };
+        state.lastMoveAt = t;
+      }
+      state.clicks.push(t);
       if (state.clicks.length > CLICK_HISTORY) state.clicks.shift();
     },
     opts,

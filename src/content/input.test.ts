@@ -65,3 +65,26 @@ describe('click history', () => {
     input.dispose();
   });
 });
+
+describe('touch', () => {
+  it('follows tap positions on touch screens', () => {
+    let t = 0;
+    const input = createInput(window, () => t);
+    t = 50;
+    const tap = new MouseEvent('pointerdown', { clientX: 120, clientY: 80 });
+    Object.defineProperty(tap, 'pointerType', { value: 'touch' });
+    window.dispatchEvent(tap);
+    expect(input.state.pointer).toEqual({ x: 120, y: 80 });
+    expect(input.state.lastMoveAt).toBe(50);
+    input.dispose();
+  });
+
+  it('a mouse click does not move the target', () => {
+    const input = createInput(window, () => 0);
+    const click = new MouseEvent('pointerdown', { clientX: 120, clientY: 80 });
+    Object.defineProperty(click, 'pointerType', { value: 'mouse' });
+    window.dispatchEvent(click);
+    expect(input.state.pointer).toBeNull();
+    input.dispose();
+  });
+});

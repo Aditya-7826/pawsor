@@ -25,6 +25,8 @@ export interface DogView {
   /** Float a small heart up from the dog at `p`. Capped; returns false when at the cap. */
   spawnHeart(p: Point): boolean;
   setCoat(coat: Coat): void;
+  /** Fade the dog out (reduced-motion moves). */
+  setFaded(faded: boolean): void;
 }
 
 const HEART_SVG =
@@ -119,6 +121,9 @@ export function createDogView(overlay: HTMLElement): DogView {
         hearts--;
       }, HEART_LIFE_MS);
       return true;
+    },
+    setFaded(faded) {
+      dog.classList.toggle('is-faded', faded);
     },
     setCoat(coat) {
       if (dog.dataset['coat'] !== coat) dog.dataset['coat'] = coat;
