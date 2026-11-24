@@ -1,0 +1,119 @@
+/* Pawsor dog: coat palettes, part setup and per-state keyframes. */
+
+.pawsor-dog {
+  --coat: #e9a25f;
+  --coat-shade: #c97c3c;
+  --coat-light: #fff1dc;
+  --blush: #ff9eae;
+  --look-x: 0px;
+  --look-y: 0px;
+  --head-tilt: 0deg;
+  --trot-speed: 0.36s;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 56px;
+  will-change: transform;
+}
+
+.pawsor-dog[data-coat='cocoa'] {
+  --coat: #8a5a3b;
+  --coat-shade: #6a4029;
+  --coat-light: #f2dcc8;
+}
+
+.pawsor-dog[data-coat='snow'] {
+  --coat: #eceae6;
+  --coat-shade: #c9c5bf;
+  --coat-light: #ffffff;
+}
+
+.pawsor-flip {
+  width: 100%;
+  height: 100%;
+  transition: transform var(--t-fast, 140ms) ease-out;
+}
+
+.pawsor-dog[data-facing='left'] .pawsor-flip {
+  transform: scaleX(-1);
+}
+
+.pawsor-svg {
+  display: block;
+  overflow: visible;
+}
+
+.pawsor-svg [data-part] {
+  transform-box: fill-box;
+}
+
+.pawsor-svg [data-part='rig'] {
+  transform-origin: 50% 100%;
+}
+.pawsor-svg [data-part='body'] {
+  transform-origin: 50% 100%;
+}
+.pawsor-svg [data-part='head'] {
+  transform-origin: 30% 80%;
+  transform: rotate(var(--head-tilt));
+  transition: transform 200ms ease-out;
+}
+.pawsor-svg [data-part='tail'] {
+  transform-origin: 90% 90%;
+}
+.pawsor-svg [data-part='ear-left'],
+.pawsor-svg [data-part='ear-right'] {
+  transform-origin: 50% 100%;
+}
+.pawsor-svg .pawsor-leg {
+  transform-origin: 50% 0%;
+}
+.pawsor-svg [data-part='eyes'] {
+  transform: translate(var(--look-x), var(--look-y));
+  transition: transform 160ms ease-out;
+}
+
+/* Eye variants: open by default. */
+.pawsor-eyes-closed,
+.pawsor-eyes-happy {
+  display: none;
+}
+.pawsor-dog.is-blinking .pawsor-eyes-open {
+  display: none;
+}
+.pawsor-dog.is-blinking .pawsor-eyes-closed {
+  display: inline;
+}
+
+/* Idle: gentle breathing. */
+.pawsor-dog[data-state='idle'] [data-part='body'] {
+  animation: pawsor-breathe 3s ease-in-out infinite;
+}
+.pawsor-dog.is-twitching [data-part='ear-right'] {
+  animation: pawsor-twitch 360ms ease-in-out;
+}
+
+@keyframes pawsor-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.03, 1.06);
+  }
+}
+
+@keyframes pawsor-twitch {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(14deg);
+  }
+  70% {
+    transform: rotate(-6deg);
+  }
+}
