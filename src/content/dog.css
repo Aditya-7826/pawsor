@@ -304,3 +304,81 @@
     transform: rotate(-35deg) scaleY(1.1);
   }
 }
+
+/* Startled: jump, ears up, wide eyes, "!" bubble. */
+.pawsor-dog[data-state='startled'] [data-part='rig'] {
+  animation: pawsor-jump 0.55s var(--ease-boing, ease-out);
+}
+.pawsor-dog[data-state='startled'] [data-part='ear-left'],
+.pawsor-dog[data-state='startled'] [data-part='ear-right'] {
+  animation: pawsor-ears-up 0.9s var(--ease-boing, ease-out) both;
+}
+.pawsor-dog[data-state='startled'] [data-part='eyes'] {
+  transform: scale(1.15);
+  transform-origin: 50% 50%;
+}
+.pawsor-dog[data-state='startled'] [data-part='tail'] {
+  transform: rotate(-20deg);
+}
+
+.pawsor-bang {
+  top: -16px;
+  left: 50px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fffdf8;
+  border: 2px solid var(--ink, #3b2a20);
+  font-size: 13px;
+}
+.pawsor-dog[data-facing='left'] .pawsor-bang {
+  left: -4px;
+}
+.pawsor-dog[data-state='startled'] .pawsor-bang {
+  display: block;
+  animation: pawsor-pop 0.9s var(--ease-boing, ease-out) both;
+}
+
+@keyframes pawsor-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  15% {
+    transform: translateY(2px) scale(1.08, 0.9);
+  }
+  45% {
+    transform: translateY(-18px) scale(0.95, 1.06);
+  }
+  75% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+}
+
+@keyframes pawsor-ears-up {
+  0% {
+    transform: none;
+  }
+  25%,
+  80% {
+    transform: rotate(8deg) scaleY(1.18);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes pawsor-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(6px);
+  }
+  20%,
+  75% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-4px);
+  }
+}

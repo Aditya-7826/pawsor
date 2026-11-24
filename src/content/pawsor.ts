@@ -74,6 +74,7 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
         distanceToTarget: toTarget,
         lastMoveAt: input.state.lastMoveAt,
         lastInputAt: input.state.lastInputAt,
+        clicks: input.state.clicks,
       }),
     );
 

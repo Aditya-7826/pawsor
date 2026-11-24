@@ -51,3 +51,17 @@ describe('createInput', () => {
     expect(input.state.lastInputAt).toBe(0);
   });
 });
+
+describe('click history', () => {
+  it('keeps recent pointerdown times, capped', () => {
+    let t = 0;
+    const input = createInput(window, () => t);
+    for (let i = 0; i < 12; i++) {
+      t = i * 10;
+      window.dispatchEvent(new Event('pointerdown'));
+    }
+    expect(input.state.clicks).toHaveLength(8);
+    expect(input.state.clicks.at(-1)).toBe(110);
+    input.dispose();
+  });
+});

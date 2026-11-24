@@ -4,9 +4,11 @@ import {
   FOLLOW_THRESHOLD,
   SIT_AFTER_MS,
   SLEEP_AFTER_MS,
+  STARTLE_MS,
   STRETCH_MS,
 } from './config';
 import {
+  countRecent,
   initialState,
   isWaking,
   run,
@@ -67,6 +69,7 @@ describe('sense', () => {
     distanceToTarget: 0,
     lastMoveAt: 1000,
     lastInputAt: 1000,
+    clicks: [],
   };
 
   it('reports nothing when the cursor is near and moving', () => {
@@ -139,6 +142,7 @@ describe('sense: sleep and wake', () => {
     distanceToTarget: 0,
     lastMoveAt: 20_000 - SLEEP_AFTER_MS,
     lastInputAt: 20_000 - SLEEP_AFTER_MS,
+    clicks: [],
   };
 
   it('reports INACTIVE after the sleep delay; idle goes sit then sleep in one frame', () => {
@@ -163,5 +167,53 @@ describe('sense: sleep and wake', () => {
     expect(sense(awake, { ...far, now: 20_000 + STRETCH_MS - 1 })).toEqual([]);
     const later = { ...far, now: 20_000 + STRETCH_MS, lastMoveAt: 20_000 + STRETCH_MS };
     expect(run(awake, sense(awake, later)).name).toBe('follow');
+  });
+});
+
+describe('startled', () => {
+  const calm: Senses = {
+    now: 10_000,
+    distanceToCursor: 40,
+    distanceToTarget: 0,
+    lastMoveAt: 10_000,
+    lastInputAt: 10_000,
+    clicks: [],
+  };
+
+  it('counts only clicks inside the window', () => {
+    expect(countRecent([100, 500, 900, 1000], 1000, 600)).toBe(3);
+    expect(countRecent([100, 200], 1000, 600)).toBe(0);
+    expect(countRecent([1200], 1000, 600)).toBe(0);
+  });
+
+  it('3 clicks within 600ms startle the dog from any calm state', () => {
+    const clicks = [9_500, 9_700, 9_900];
+    for (const name of ['idle', 'follow', 'sit', 'sleep'] as const) {
+      const s = run(at(name), sense(at(name), { ...calm, clicks }));
+      expect(s.name, name).toBe('startled');
+    }
+  });
+
+  it('2 clicks, or 3 slow clicks, do not', () => {
+    expect(sense(at('idle'), { ...calm, clicks: [9_800, 9_900] })).toEqual([]);
+    expect(sense(at('idle'), { ...calm, clicks: [9_000, 9_500, 9_900] })).toEqual([]);
+  });
+
+  it('more rapid clicks while startled do not restart it', () => {
+    const startled = at('startled', 9_950);
+    const s = run(startled, sense(startled, { ...calm, clicks: [9_800, 9_900, 9_990] }));
+    expect(s).toBe(startled);
+  });
+
+  it('returns to idle after the startle time', () => {
+    const startled = at('startled', 10_000 - STARTLE_MS);
+    expect(run(startled, sense(startled, calm))).toEqual(at('idle', 10_000));
+    const early = at('startled', 10_000 - STARTLE_MS + 1);
+    expect(run(early, sense(early, calm))).toBe(early);
+  });
+
+  it('ignores TIMEOUT in other states', () => {
+    const idle = at('idle');
+    expect(transition(idle, { type: 'TIMEOUT', at: 1 })).toBe(idle);
   });
 });

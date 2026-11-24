@@ -52,7 +52,10 @@ export function createDogView(overlay: HTMLElement): DogView {
     span.textContent = ch;
     zzz.append(span);
   }
-  dog.append(flip, zzz);
+  const bang = doc.createElement('div');
+  bang.className = 'pawsor-bubble pawsor-bang';
+  bang.textContent = '!';
+  dog.append(flip, zzz, bang);
   overlay.append(dog);
 
   let lastLook = '';

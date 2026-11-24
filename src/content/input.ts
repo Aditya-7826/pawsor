@@ -1,3 +1,4 @@
+import { CLICK_HISTORY } from './config';
 import type { Point } from './motion';
 
 /** Latest input facts, written by DOM listeners and read once per frame. */
@@ -8,6 +9,8 @@ export interface InputState {
   lastMoveAt: number;
   /** Time of the last input of any kind. */
   lastInputAt: number;
+  /** Recent click (pointerdown) times, oldest first. */
+  clicks: number[];
 }
 
 export interface Input {
@@ -19,7 +22,12 @@ export function createInput(
   win: Window = window,
   now: () => number = () => performance.now(),
 ): Input {
-  const state: InputState = { pointer: null, lastMoveAt: now(), lastInputAt: now() };
+  const state: InputState = {
+    pointer: null,
+    lastMoveAt: now(),
+    lastInputAt: now(),
+    clicks: [],
+  };
   const controller = new AbortController();
   const opts: AddEventListenerOptions = {
     passive: true,
@@ -34,6 +42,15 @@ export function createInput(
       state.pointer = { x: e.clientX, y: e.clientY };
       state.lastMoveAt = t;
       state.lastInputAt = t;
+    },
+    opts,
+  );
+
+  win.addEventListener(
+    'pointerdown',
+    () => {
+      state.clicks.push(now());
+      if (state.clicks.length > CLICK_HISTORY) state.clicks.shift();
     },
     opts,
   );

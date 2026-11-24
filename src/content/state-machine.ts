@@ -3,12 +3,15 @@ import {
   FOLLOW_THRESHOLD,
   SIT_AFTER_MS,
   SLEEP_AFTER_MS,
+  STARTLE_CLICKS,
+  STARTLE_MS,
+  STARTLE_WINDOW_MS,
   STRETCH_MS,
 } from './config';
 
 /** Pure behaviour logic. No DOM, no clocks: time arrives on events. */
 
-export type StateName = 'idle' | 'follow' | 'sit' | 'sleep';
+export type StateName = 'idle' | 'follow' | 'sit' | 'sleep' | 'startled';
 
 export interface MachineState {
   readonly name: StateName;
@@ -23,7 +26,9 @@ export type MachineEvent =
   | { readonly type: 'ARRIVED'; readonly at: number }
   | { readonly type: 'STILL'; readonly at: number }
   | { readonly type: 'INACTIVE'; readonly at: number }
-  | { readonly type: 'WAKE'; readonly at: number };
+  | { readonly type: 'WAKE'; readonly at: number }
+  | { readonly type: 'RAPID_CLICKS'; readonly at: number }
+  | { readonly type: 'TIMEOUT'; readonly at: number };
 
 export const initialState = (at = 0): MachineState => ({ name: 'idle', since: at });
 
@@ -34,6 +39,10 @@ const enter = (name: StateName, at: number): MachineState => ({ name, since: at 
  * the same state object.
  */
 export function transition(state: MachineState, event: MachineEvent): MachineState {
+  // Startle wins over everything except an ongoing startle.
+  if (event.type === 'RAPID_CLICKS' && state.name !== 'startled') {
+    return enter('startled', event.at);
+  }
   switch (state.name) {
     case 'idle':
       if (event.type === 'FAR') return enter('follow', event.at);
@@ -51,6 +60,9 @@ export function transition(state: MachineState, event: MachineEvent): MachineSta
       if (event.type === 'WAKE') {
         return { name: 'idle', since: event.at, wakingUntil: event.at + STRETCH_MS };
       }
+      return state;
+    case 'startled':
+      if (event.type === 'TIMEOUT') return enter('idle', event.at);
       return state;
     default: {
       const unreachable: never = state.name;
@@ -80,6 +92,13 @@ export interface Senses {
   lastMoveAt: number;
   /** Time of the last input of any kind (pointer, click, key, scroll, touch). */
   lastInputAt: number;
+  /** Recent click timestamps, oldest first. */
+  clicks: readonly number[];
+}
+
+/** How many of `times` fall within the last `windowMs` before `now`. */
+export function countRecent(times: readonly number[], now: number, windowMs: number): number {
+  return times.filter((t) => t <= now && now - t <= windowMs).length;
 }
 
 /**
@@ -107,6 +126,12 @@ export function sense(state: MachineState, s: Senses): MachineEvent[] {
   }
   if (s.now - s.lastInputAt >= SLEEP_AFTER_MS) {
     events.push({ type: 'INACTIVE', at });
+  }
+  if (countRecent(s.clicks, s.now, STARTLE_WINDOW_MS) >= STARTLE_CLICKS) {
+    events.push({ type: 'RAPID_CLICKS', at });
+  }
+  if (state.name === 'startled' && s.now - state.since >= STARTLE_MS) {
+    events.push({ type: 'TIMEOUT', at });
   }
   if (state.name === 'sleep' && s.lastInputAt > state.since) {
     events.push({ type: 'WAKE', at });

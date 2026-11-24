@@ -54,3 +54,11 @@ export const TROT_FAST_S = 0.22;
 export const SLEEP_AFTER_MS = 12000;
 /** Length of the wake-up stretch; the dog stays put meanwhile. */
 export const STRETCH_MS = 900;
+
+/** This many clicks within the window startle the dog. */
+export const STARTLE_CLICKS = 3;
+export const STARTLE_WINDOW_MS = 600;
+/** How long the startled jump lasts before the dog settles back to idle. */
+export const STARTLE_MS = 900;
+/** Click timestamps kept by input (only the most recent matter). */
+export const CLICK_HISTORY = 8;
