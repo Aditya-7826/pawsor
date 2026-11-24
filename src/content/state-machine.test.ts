@@ -70,6 +70,7 @@ describe('sense', () => {
     lastMoveAt: 1000,
     lastInputAt: 1000,
     clicks: [],
+    hasSelection: false,
   };
 
   it('reports nothing when the cursor is near and moving', () => {
@@ -143,6 +144,7 @@ describe('sense: sleep and wake', () => {
     lastMoveAt: 20_000 - SLEEP_AFTER_MS,
     lastInputAt: 20_000 - SLEEP_AFTER_MS,
     clicks: [],
+    hasSelection: false,
   };
 
   it('reports INACTIVE after the sleep delay; idle goes sit then sleep in one frame', () => {
@@ -178,6 +180,7 @@ describe('startled', () => {
     lastMoveAt: 10_000,
     lastInputAt: 10_000,
     clicks: [],
+    hasSelection: false,
   };
 
   it('counts only clicks inside the window', () => {
@@ -215,5 +218,53 @@ describe('startled', () => {
   it('ignores TIMEOUT in other states', () => {
     const idle = at('idle');
     expect(transition(idle, { type: 'TIMEOUT', at: 1 })).toBe(idle);
+  });
+});
+
+describe('perch', () => {
+  const calm: Senses = {
+    now: 10_000,
+    distanceToCursor: 40,
+    distanceToTarget: 0,
+    lastMoveAt: 10_000,
+    lastInputAt: 10_000,
+    clicks: [],
+    hasSelection: false,
+  };
+
+  it('idle, follow and sit perch on a selection', () => {
+    for (const name of ['idle', 'follow', 'sit'] as const) {
+      const s = run(at(name), sense(at(name), { ...calm, hasSelection: true }));
+      expect(s.name, name).toBe('perch');
+    }
+  });
+
+  it('a far cursor does not pull the dog off its perch', () => {
+    const perch = at('perch');
+    const events = sense(perch, {
+      ...calm,
+      hasSelection: true,
+      distanceToCursor: 500,
+      distanceToTarget: 460,
+    });
+    expect(run(perch, events)).toBe(perch);
+  });
+
+  it('leaves the perch when the selection clears', () => {
+    expect(run(at('perch'), sense(at('perch'), calm))).toEqual(at('idle', 10_000));
+  });
+
+  it('can fall asleep on the perch', () => {
+    expect(transition(at('perch'), { type: 'INACTIVE', at: 3 })).toEqual(at('sleep', 3));
+  });
+
+  it('startle beats perch, and the dog perches again afterwards', () => {
+    const startled = run(at('perch'), [{ type: 'RAPID_CLICKS', at: 1 }]);
+    expect(startled.name).toBe('startled');
+    const after = run(startled, [
+      { type: 'TIMEOUT', at: 1000 },
+      { type: 'SELECT', at: 1000 },
+    ]);
+    expect(after.name).toBe('perch');
   });
 });

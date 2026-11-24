@@ -88,3 +88,15 @@ export function trotDuration(
   const t = clamp((speed - minSpeed) / Math.max(maxSpeed - minSpeed, 1), 0, 1);
   return slowS + (fastS - slowS) * t;
 }
+
+export interface Rect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/** Where the dog's centre goes to sit on top of a text line. */
+export function perchPoint(line: Rect, dogHeight: number, sink: number): Point {
+  return { x: line.left + line.width / 2, y: line.top - dogHeight / 2 + sink };
+}

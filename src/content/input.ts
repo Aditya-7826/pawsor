@@ -11,6 +11,8 @@ export interface InputState {
   lastInputAt: number;
   /** Recent click (pointerdown) times, oldest first. */
   clicks: number[];
+  /** The page may have a non-empty selection (cheap flag set on selectionchange). */
+  selectionActive: boolean;
 }
 
 export interface Input {
@@ -27,6 +29,7 @@ export function createInput(
     lastMoveAt: now(),
     lastInputAt: now(),
     clicks: [],
+    selectionActive: false,
   };
   const controller = new AbortController();
   const opts: AddEventListenerOptions = {
@@ -62,6 +65,15 @@ export function createInput(
   for (const type of ['pointerdown', 'keydown', 'wheel', 'scroll', 'touchstart'] as const) {
     win.addEventListener(type, touch, opts);
   }
+
+  win.document.addEventListener(
+    'selectionchange',
+    () => {
+      const sel = win.getSelection();
+      state.selectionActive = sel !== null && !sel.isCollapsed;
+    },
+    opts,
+  );
 
   return { state, dispose: () => controller.abort() };
 }

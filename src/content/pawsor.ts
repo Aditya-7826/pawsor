@@ -1,4 +1,5 @@
 import {
+  ARRIVE_EPSILON,
   BLINK_MAX_MS,
   BLINK_MIN_MS,
   DOG_HEIGHT,
@@ -11,6 +12,7 @@ import {
   LOOK_MAX_PX,
   MAX_SPEED,
   MIN_SPEED,
+  PERCH_SINK,
   SPEED_GAIN,
   START_OFFSET,
   STOP_DISTANCE,
@@ -28,6 +30,7 @@ import {
   distance,
   followTarget,
   nextFacing,
+  perchPoint,
   speedFor,
   stepToward,
   trotDuration,
@@ -35,7 +38,15 @@ import {
   type Point,
   type Size,
 } from './motion';
-import { initialState, isWaking, run, sense, type MachineState } from './state-machine';
+import { readSelectionLine } from './selection';
+import {
+  initialState,
+  isWaking,
+  run,
+  sense,
+  type MachineState,
+  type StateName,
+} from './state-machine';
 
 const DOG_SIZE: Size = { width: DOG_WIDTH, height: DOG_HEIGHT };
 
@@ -60,6 +71,8 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
     // 1. Reads.
     const vp = viewport();
     const cursor = input.state.pointer;
+    // Only touch the selection API after a selectionchange said there might be one.
+    const line = input.state.selectionActive ? readSelectionLine(win) : null;
 
     // 2. Sense and transition.
     const target = cursor
@@ -75,20 +88,31 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
         lastMoveAt: input.state.lastMoveAt,
         lastInputAt: input.state.lastInputAt,
         clicks: input.state.clicks,
+        hasSelection: line !== null,
       }),
     );
 
     // 3. Move: farther away → faster; legs keep pace with the speed.
-    if (machine.name === 'follow') {
-      const speed = speedFor(toTarget, SPEED_GAIN, MIN_SPEED, MAX_SPEED);
-      pos = stepToward(pos, target, dt, FOLLOW_EASE, speed);
-      facing = nextFacing(facing, target.x - pos.x, FACING_DEAD_ZONE);
+    let visual: StateName = machine.name;
+    const goal =
+      machine.name === 'follow'
+        ? target
+        : machine.name === 'perch' && line
+          ? clampToViewport(perchPoint(line, DOG_HEIGHT, PERCH_SINK), vp, DOG_SIZE, EDGE_PADDING)
+          : null;
+    if (goal) {
+      const remaining = distance(pos, goal);
+      const speed = speedFor(remaining, SPEED_GAIN, MIN_SPEED, MAX_SPEED);
+      pos = stepToward(pos, goal, dt, FOLLOW_EASE, speed);
+      facing = nextFacing(facing, goal.x - pos.x, FACING_DEAD_ZONE);
       view.setTrotSpeed(trotDuration(speed, MIN_SPEED, MAX_SPEED, TROT_SLOW_S, TROT_FAST_S));
+      // Walking over to the text looks like a trot until the dog sits down on it.
+      if (machine.name === 'perch' && remaining > ARRIVE_EPSILON) visual = 'follow';
     }
     pos = clampToViewport(pos, vp, DOG_SIZE, EDGE_PADDING);
 
     // 4. Idle life.
-    const idleLike = machine.name === 'idle' || machine.name === 'sit';
+    const idleLike = visual === 'idle' || visual === 'sit' || visual === 'perch';
     const asleep = machine.name === 'sleep';
     if (now >= nextBlinkAt) {
       if (!asleep) view.blink();
@@ -114,7 +138,7 @@ export function createPawsor(view: DogView, input: Input, win: Window = window):
     }
 
     // 5. Writes.
-    view.setState(machine.name);
+    view.setState(visual);
     view.setWaking(isWaking(machine, now));
     view.setFacing(facing);
     view.setPosition(pos);

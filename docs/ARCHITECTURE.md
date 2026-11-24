@@ -74,18 +74,18 @@ document_idle
 
 States: `idle`, `follow`, `sit`, `sleep`, `startled`, `perch`, `petted`.
 
-| Event          | Meaning                                         |
-| -------------- | ----------------------------------------------- |
-| `FAR`          | Cursor beyond the follow threshold              |
-| `ARRIVED`      | Dog reached its stop point                      |
-| `STILL`        | Cursor still for `SIT_AFTER_MS`                 |
-| `INACTIVE`     | No input for `SLEEP_AFTER_MS`                   |
-| `WAKE`         | Any input while asleep                          |
-| `RAPID_CLICKS` | ≥ 3 clicks within 600ms                         |
-| `SELECT`       | Non-empty selection appeared (carries its rect) |
-| `DESELECT`     | Selection cleared                               |
-| `WIGGLE`       | Petting wiggle over the dog                     |
-| `TIMEOUT`      | Timed state (`startled`, `petted`) is over      |
+| Event          | Meaning                                                |
+| -------------- | ------------------------------------------------------ |
+| `FAR`          | Cursor beyond the follow threshold                     |
+| `ARRIVED`      | Dog reached its stop point                             |
+| `STILL`        | Cursor still for `SIT_AFTER_MS`                        |
+| `INACTIVE`     | No input for `SLEEP_AFTER_MS`                          |
+| `WAKE`         | Any input while asleep                                 |
+| `RAPID_CLICKS` | ≥ 3 clicks within 600ms                                |
+| `SELECT`       | Non-empty selection exists (line rect read each frame) |
+| `DESELECT`     | Selection cleared                                      |
+| `WIGGLE`       | Petting wiggle over the dog                            |
+| `TIMEOUT`      | Timed state (`startled`, `petted`) is over             |
 
 ```mermaid
 stateDiagram-v2

@@ -6,6 +6,7 @@ import {
   easeFactor,
   followTarget,
   nextFacing,
+  perchPoint,
   speedFor,
   stepToward,
   trotDuration,
@@ -108,5 +109,14 @@ describe('trotDuration', () => {
     expect(trotDuration(500, 100, 500, 0.5, 0.2)).toBeCloseTo(0.2);
     expect(trotDuration(300, 100, 500, 0.5, 0.2)).toBeCloseTo(0.35);
     expect(trotDuration(9999, 100, 500, 0.5, 0.2)).toBeCloseTo(0.2);
+  });
+});
+
+describe('perchPoint', () => {
+  it('centres the dog on top of the line with its paws slightly sunk in', () => {
+    expect(perchPoint({ left: 100, top: 300, width: 200, height: 20 }, 56, 6)).toEqual({
+      x: 200,
+      y: 278,
+    });
   });
 });

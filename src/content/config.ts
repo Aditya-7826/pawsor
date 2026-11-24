@@ -62,3 +62,6 @@ export const STARTLE_WINDOW_MS = 600;
 export const STARTLE_MS = 900;
 /** Click timestamps kept by input (only the most recent matter). */
 export const CLICK_HISTORY = 8;
+
+/** How far the dog's paws sink onto the selected line so it looks seated on the text. */
+export const PERCH_SINK = 6;
